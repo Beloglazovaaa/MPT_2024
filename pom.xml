@@ -2,11 +2,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+
     <groupId>your.group.id</groupId>
-    <artifactId>your-artifact-id</artifactId>
+    <artifactId>mpt</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
+        <sourceDirectory>${project.basedir}</sourceDirectory>
         <maven.compiler.release>21</maven.compiler.release>
     </properties>
 
@@ -14,20 +16,18 @@
 
         <dependency>
             <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>5.1.0</version>
+            <artifactId>poi</artifactId>
+            <version>5.2.5</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.5</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>2.14.1</version> <!-- Укажите актуальную версию -->
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi</artifactId>
-            <version>5.2.4</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
