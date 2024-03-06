@@ -1,35 +1,32 @@
-//Сложный вариант. Целочисленные, байтовые и вещественные типы данных. Реализовать программу с интерактивным консольным меню,
-// (т.е. вывод списка действий по цифрам. При этом при нажатии на цифру у нас должно выполняться определенное действие).
-// Задания полностью идентичны базовому варианту. При этом в программе данные пункты должны называться следующим образом:
-//1. Вывести все таблицы из MySQL.
-//2. Создать таблицу в MySQL.
-//3. Сложение чисел, результат сохранить в MySQL с последующим выводом в консоль.
-//4.
-//Вычитание чисел, результат сохранить в MySQL с последующим выводом в консоль.
-//5.
-//Умножение чисел, результат сохранить в MySQL с последующим выводом в консоль.
-//6.
-//Деление чисел, результат сохранить в MySQL с последующим выводом в консоль.
-//7.
-//Деление чисел по модулю (остаток), результат сохранить в MySQL с последующим выводом в консоль.
-//8.
-//Возведение числа в модуль, результат сохранить в MySQL с последующим выводом в консоль.
-//9. Возведение числа в степень, результат сохранить в MySQL с последующим выводом в консоль.
-//10. Сохранить все данные (вышеполученные результаты) из MySQL в Excel и вывести на экран.
+/* Необходимо с клавиатуры задать несколько чисел. Реализовать
+программу, проверяющую каждое число на целостность (т.е. целое число или нет) и
+четность. При этом необходимо реализовать условие на проверку целостности числа (т.е.
+если пользователь вводит не целое число или вообще не число, то сообщать ему об ошибке).
+Целочисленный тип данных. Реализовать программу с интерактивным консольным меню,
+(т.е. вывод списка действий по цифрам. При этом при нажатии на цифру у нас должно
+выполняться определенное действие).
+При этом в программе данные пункты должны называться следующим образом:
+1. Вывести все таблицы из MySQL.
+2. Создать таблицу в MySQL.
+3. Выполнение задачи базового варианта, результат сохранить в MySQL с последующим
+выводом в консоль.
+4. Сохранить все данные (вышеполученные результаты) из MySQL в Excel и вывести на
+экран. */
 
-import java.sql.*;
-import java.util.Scanner;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Cell;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
-public class hard_1 {
+public class hard_3 {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         boolean running = true;
@@ -76,14 +73,8 @@ public class hard_1 {
         while (running) {
             System.out.println("1. Вывести все таблицы из MySQL.");
             System.out.println("2. Создать таблицу в MySQL.");
-            System.out.println("3. Сложение чисел.");
-            System.out.println("4. Вычитание чисел.");
-            System.out.println("5. Умножение чисел.");
-            System.out.println("6. Деление чисел.");
-            System.out.println("7. Деление чисел по модулю (остаток).");
-            System.out.println("8. Возведение числа в модуль.");
-            System.out.println("9. Возведение числа в степень.");
-            System.out.println("10. Сохранить все данные в Excel и вывести на экран.");
+            System.out.println("3. Проверить на целостность и четность.");
+            System.out.println("4. Сохранить все данные в Excel и вывести на экран.");
             System.out.println("0. Выйти из программы.");
             System.out.println("Выберите действие: ");
             int choice = scanner.nextInt();
@@ -107,7 +98,7 @@ public class hard_1 {
                     tableName = scanner.next(); // Обновляем tableName здесь
 
                     // Создаем SQL-запрос для создания таблицы
-                     String createTableQuery = "CREATE TABLE " + tableName +
+                    String createTableQuery = "CREATE TABLE " + tableName +
                             "(first_number VARCHAR(255), second_number VARCHAR(255), " +
                             "sum_result INT, subtraction_result INT, multiplication_result INT, " +
                             "division_result DOUBLE, remainder_result DOUBLE, number_module DOUBLE, " +
@@ -180,40 +171,6 @@ public class hard_1 {
                                 case 3: // Сложение
                                     result = firstNumber + secondNumber;
                                     sign = " + ";
-                                    break;
-                                case 4: // Вычитание
-                                    result = firstNumber - secondNumber;
-                                    sign = " - ";
-                                    break;
-                                case 5: // Умножение
-                                    result = firstNumber * secondNumber;
-                                    sign = " * ";
-                                    break;
-                                case 6: // Деление
-                                    if (secondNumber != 0) {
-                                        result = firstNumber / secondNumber;
-                                    } else {
-                                        System.out.println("На ноль делить нельзя.");
-                                        continue; // Пропускаем текущую итерацию цикла
-                                    }
-                                    sign = " / ";
-                                    break;
-                                case 7: // Деление по модулю
-                                    if (secondNumber != 0) {
-                                        result = firstNumber % secondNumber;
-                                    } else {
-                                        System.out.println("На ноль делить нельзя.");
-                                        continue; // Пропускаем текущую итерацию цикла
-                                    }
-                                    sign = " % ";
-                                    break;
-                                case 8: // Возведение в модуль
-                                    result = Math.abs(firstNumber);
-                                    sign = " abs ";
-                                    break;
-                                case 9: // Возведение в степень
-                                    result = (int) Math.pow(firstNumber, secondNumber);
-                                    sign = " ^ ";
                                     break;
                             }
 
