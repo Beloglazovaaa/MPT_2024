@@ -1,30 +1,16 @@
-/* Необходимо с клавиатуры задать несколько чисел. Реализовать
-программу, проверяющую каждое число на целостность (т.е. целое число или нет) и
-четность. При этом необходимо реализовать условие на проверку целостности числа (т.е.
-если пользователь вводит не целое число или вообще не число, то сообщать ему об ошибке).
-Целочисленный тип данных. Реализовать программу с интерактивным консольным меню,
-(т.е. вывод списка действий по цифрам. При этом при нажатии на цифру у нас должно
-выполняться определенное действие).
-При этом в программе данные пункты должны называться следующим образом:
-1. Вывести все таблицы из MySQL.
-2. Создать таблицу в MySQL.
-3. Выполнение задачи базового варианта, результат сохранить в MySQL с последующим
-выводом в консоль.
-4. Сохранить все данные (вышеполученные результаты) из MySQL в Excel и вывести на
-экран. */
-
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Scanner;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 
 public class hard_3 {
     public static void main(String[] args) {
@@ -73,197 +59,162 @@ public class hard_3 {
         while (running) {
             System.out.println("1. Вывести все таблицы из MySQL.");
             System.out.println("2. Создать таблицу в MySQL.");
-            System.out.println("3. Проверить на целостность и четность.");
-            System.out.println("4. Сохранить все данные в Excel и вывести на экран.");
+            System.out.println("3. Выполнение задачи базового варианта, результат сохранить в MySQL с последующим выводом в консоль.");
+            System.out.println("4. Сохранить все данные (вышеполученные результаты) из MySQL в Excel и вывести на экран.");
             System.out.println("0. Выйти из программы.");
             System.out.println("Выберите действие: ");
             int choice = scanner.nextInt();
             switch (choice) {
                 case 1:
-                    try {
-                        Statement statement = connection.createStatement();
-                        ResultSet resultSet = statement.executeQuery("SHOW TABLES");
-                        System.out.println("Таблицы в базе данных:");
-                        while (resultSet.next()) {
-                            tableName = resultSet.getString(1); // Обновляем tableName здесь
-                            System.out.println(tableName);
-                        }
-                    } catch (SQLException e) {
-                        System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
-                    }
+                    // Вывод всех таблиц из MySQL
+                    showTables(connection);
                     break;
 
                 case 2:
-                    System.out.println("Введите название таблицы: ");
-                    tableName = scanner.next(); // Обновляем tableName здесь
-
-                    // Создаем SQL-запрос для создания таблицы
-                    String createTableQuery = "CREATE TABLE " + tableName +
-                            "(first_number VARCHAR(255), second_number VARCHAR(255), " +
-                            "sum_result INT, subtraction_result INT, multiplication_result INT, " +
-                            "division_result DOUBLE, remainder_result DOUBLE, number_module DOUBLE, " +
-                            "number_power DOUBLE)";
-
-                    try {
-                        Statement statement = connection.createStatement();
-                        statement.executeUpdate(createTableQuery);
-                        System.out.println("Таблица успешно создана.");
-                    } catch (SQLException e) {
-                        System.out.println("Ошибка при создании таблицы: " + e.getMessage());
-                        break; // Выходим из case 2
-                    }
-
-                    // Добавляем данные в таблицу
-                    try {
-                        Statement statement = connection.createStatement();
-                        String insertDataQuery = "INSERT INTO " + tableName + " " + "(first_number, second_number) VALUES (?, ?)";
-                        PreparedStatement preparedStatement = connection.prepareStatement(insertDataQuery);
-
-                        String firstNumberStr = "", secondNumberStr = "";
-                        while (true) {
-                            System.out.println("Введите первое число или 'стоп' для завершения ввода: ");
-                            firstNumberStr = scanner.next();
-                            if (firstNumberStr.equalsIgnoreCase("стоп")) {
-                                break;
-                            }
-
-                            System.out.println("Введите второе число или 'стоп' для завершения ввода: ");
-                            secondNumberStr = scanner.next();
-                            if (secondNumberStr.equalsIgnoreCase("стоп")) {
-                                break;
-                            }
-
-                            // Устанавливаем значения параметров запроса
-                            preparedStatement.setString(1, firstNumberStr);
-                            preparedStatement.setString(2, secondNumberStr);
-
-                            preparedStatement.executeUpdate();
-                            System.out.println("Данные успешно добавлены.");
-                        }
-                    } catch (SQLException e) {
-                        System.out.println("Ошибка при добавлении данных: " + e.getMessage());
-                    }
+                    // Создание таблицы в MySQL
+                    createTable(scanner, connection);
                     break;
+
                 case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                    try {
-                        Statement statement = connection.createStatement();
-                        ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName);
-                        List<int[]> numbers = new ArrayList<>();
-                        while (resultSet.next()) {
-                            int firstNumber = Integer.parseInt(resultSet.getString("first_number"));
-                            int secondNumber = Integer.parseInt(resultSet.getString("second_number"));
-                            numbers.add(new int[]{firstNumber, secondNumber});
-                        }
-
-                        for (int[] pair : numbers) {
-                            int firstNumber = pair[0];
-                            int secondNumber = pair[1];
-
-                            int result = 0; // Инициализация результата
-                            String sign = "";
-                            switch (choice) {
-                                case 3: // Сложение
-                                    result = firstNumber + secondNumber;
-                                    sign = " + ";
-                                    break;
-                            }
-
-                            // Вывод результата
-                            System.out.println("Результат вычисления чисел: " + firstNumber  + sign + secondNumber + " = " + result);
-                            // Обновление данных в таблице
-                            String updateQuery = "UPDATE " + tableName + " SET " + getResultColumnName(choice) + " = " + result + " WHERE first_number = " + firstNumber + " AND second_number = " + secondNumber;
-                            statement.executeUpdate(updateQuery);
-                        }
-                    } catch (SQLException e) {
-                        System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
-                    }
+                    // Выполнение задачи базового варианта и сохранение результата в MySQL
+                    executeTaskAndSaveToMySQL(scanner, connection);
                     break;
 
-                case 10:
-                    try {
-                        Statement statement = connection.createStatement();
-                        ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName);
-
-                        // Создаем новую книгу Excel
-                        Workbook workbook = new XSSFWorkbook();
-                        Sheet sheet = workbook.createSheet("Data");
-
-                        // Записываем заголовки столбцов
-                        Row headerRow = sheet.createRow(0);
-                        ResultSetMetaData metaData = resultSet.getMetaData();
-                        int columnCount = metaData.getColumnCount();
-                        for (int i = 1; i <= columnCount; i++) {
-                            String columnName = metaData.getColumnName(i);
-                            Cell cell = headerRow.createCell(i - 1);
-                            cell.setCellValue(columnName);
-                        }
-
-                        // Записываем данные из ResultSet в книгу Excel
-                        int rowNum = 1;
-                        while (resultSet.next()) {
-                            Row row = sheet.createRow(rowNum++);
-                            for (int i = 1; i <= columnCount; i++) {
-                                Object value = resultSet.getObject(i);
-                                Cell cell = row.createCell(i - 1);
-                                if (value != null) {
-                                    if (value instanceof Number) {
-                                        cell.setCellValue(((Number) value).doubleValue());
-                                    } else {
-                                        cell.setCellValue(value.toString());
-                                    }
-                                }
-                            }
-                        }
-
-                        // Сохраняем книгу Excel в файл
-                        String excelFileName = "java_1/hard_1_excel.xlsx";
-                        try (FileOutputStream outputStream = new FileOutputStream(excelFileName)) {
-                            workbook.write(outputStream);
-                            System.out.println("Данные успешно сохранены в файл " + excelFileName);
-                        } catch (IOException e) {
-                            System.out.println("Ошибка при сохранении данных в Excel: " + e.getMessage());
-                        }
-                    } catch (SQLException e) {
-                        System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
-                    }
+                case 4:
+                    // Сохранение всех данных из MySQL в Excel и вывод на экран
+                    saveDataToExcelAndDisplay(connection);
                     break;
 
                 case 0:
                     running = false;
-                    System.out.println("Программа завершена.");
                     break;
 
                 default:
-                    System.out.println("Некорректный выбор. Попробуйте снова.");
+                    System.out.println("Неверный выбор. Попробуйте снова.");
             }
         }
-        scanner.close();
+
+        // Закрытие подключения к базе данных
+        try {
+            if (connection != null) {
+                connection.close();
+                System.out.println("Подключение к базе данных закрыто.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Ошибка при закрытии подключения к базе данных: " + e.getMessage());
+        }
     }
 
-    private static String getResultColumnName(int choice) {
-        switch (choice) {
-            case 3:
-                return "sum_result";
-            case 4:
-                return "subtraction_result";
-            case 5:
-                return "multiplication_result";
-            case 6:
-                return "division_result";
-            case 7:
-                return "remainder_result";
-            case 8:
-                return "number_module";
-            case 9:
-                return "number_power";
-            default:
-                return "";
+    private static void showTables(Connection connection) {
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SHOW TABLES");
+            System.out.println("Таблицы в базе данных:");
+            while (resultSet.next()) {
+                System.out.println(resultSet.getString(1));
+            }
+        } catch (SQLException e) {
+            System.out.println("Ошибка при выводе таблиц: " + e.getMessage());
+        }
+    }
+
+    private static void createTable(Scanner scanner, Connection connection) {
+        System.out.println("Введите название таблицы: ");
+        String tableName = scanner.next();
+
+        // Создаем SQL-запрос для создания таблицы
+        String createTableQuery = "CREATE TABLE " + tableName +
+                "(id INT AUTO_INCREMENT PRIMARY KEY, number INT, is_integer BOOLEAN, is_even BOOLEAN)";
+
+        try {
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(createTableQuery);
+            System.out.println("Таблица успешно создана.");
+        } catch (SQLException e) {
+            System.out.println("Ошибка при создании таблицы: " + e.getMessage());
+        }
+    }
+
+    private static void executeTaskAndSaveToMySQL(Scanner scanner, Connection connection) {
+        System.out.println("Введите числа (через пробел): ");
+        scanner.nextLine(); // Очистка буфера
+        String[] numbers = scanner.nextLine().split(" ");
+
+        // Подготовка SQL-запроса для вставки данных
+        String insertQuery = "INSERT INTO your_table_name (number, is_integer, is_even) VALUES (?, ?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+            for (String num : numbers) {
+                try {
+                    int number = Integer.parseInt(num);
+                    preparedStatement.setInt(1, number);
+                    preparedStatement.setBoolean(2, true);
+                    preparedStatement.setBoolean(3, number % 2 == 0);
+                    preparedStatement.executeUpdate();
+                    System.out.printf("Число %d добавлено в таблицу.\n", number);
+                } catch (NumberFormatException e) {
+                    System.out.printf("'%s' не является целым числом.\n", num);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Ошибка при вставке данных в таблицу: " + e.getMessage());
+        }
+    }
+
+    private static void saveDataToExcelAndDisplay(Connection connection) {
+        String query = "SELECT * FROM your_table_name";
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(query);
+             Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Data");
+
+            // Заполнение заголовков
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("ID");
+            headerRow.createCell(1).setCellValue("Number");
+            headerRow.createCell(2).setCellValue("Is Integer");
+            headerRow.createCell(3).setCellValue("Is Even");
+
+            // Заполнение данных
+            int rowNum = 1;
+            while (resultSet.next()) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(resultSet.getInt("id"));
+                row.createCell(1).setCellValue(resultSet.getInt("number"));
+                row.createCell(2).setCellValue(resultSet.getBoolean("is_integer"));
+                row.createCell(3).setCellValue(resultSet.getBoolean("is_even"));
+            }
+
+            // Сохранение в файл
+            try (FileOutputStream outputStream = new FileOutputStream("data.xlsx")) {
+                workbook.write(outputStream);
+                System.out.println("Данные успешно сохранены в файл 'data.xlsx'.");
+            } catch (IOException e) {
+                System.out.println("Ошибка при сохранении данных в файл: " + e.getMessage());
+            }
+
+            // Вывод данных на экран
+            for (Row row : sheet) {
+                for (Cell cell : row) {
+                    switch (cell.getCellType()) {
+                        case STRING:
+                            System.out.print(cell.getStringCellValue() + "\t");
+                            break;
+                        case NUMERIC:
+                            System.out.print(cell.getNumericCellValue() + "\t");
+                            break;
+                        case BOOLEAN:
+                            System.out.print(cell.getBooleanCellValue() + "\t");
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                System.out.println();
+            }
+        } catch (SQLException e) {
+            System.out.println("Ошибка при получении данных из таблицы: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Ошибка при создании Excel файла: " + e.getMessage());
         }
     }
 }
