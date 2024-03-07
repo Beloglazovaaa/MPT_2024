@@ -107,7 +107,7 @@ public class hard_1 {
                     tableName = scanner.next(); // Обновляем tableName здесь
 
                     // Создаем SQL-запрос для создания таблицы
-                    String createTableQuery = "CREATE TABLE " + tableName +
+                     String createTableQuery = "CREATE TABLE " + tableName +
                             "(first_number VARCHAR(255), second_number VARCHAR(255), " +
                             "sum_result INT, subtraction_result INT, multiplication_result INT, " +
                             "division_result DOUBLE, remainder_result DOUBLE, number_module DOUBLE, " +

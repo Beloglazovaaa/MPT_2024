@@ -65,7 +65,7 @@ public class hard_2 {
         }
 
         url += dbName; // Обновляем URL для подключения к созданной базе данных
-        String tableName = "";
+        String tableName = ""; // Объявляем переменную для хранения имени таблицы
 
         while (running) {
             System.out.println("1. Вывести все таблицы из MySQL.");
@@ -78,7 +78,11 @@ public class hard_2 {
             System.out.println("0. Выйти из программы.");
             System.out.println("Выберите действие: ");
             int choice = scanner.nextInt();
+            scanner.nextLine(); // Считываем символ новой строки
+
             switch (choice) {
+                // Кейсы
+
                 case 1:
                     try {
                         Statement statement = connection.createStatement();
@@ -113,142 +117,212 @@ public class hard_2 {
                     break;
 
                 case 3:
-                    // Добавляем данные в таблицу
-                    try {
-                        System.out.println("Введите первую строку: ");
-                        String firstStr = scanner.next();
-                        System.out.println("Введите вторую строку: ");
-                        String secondStr = scanner.next();
+                    if (tableName.isEmpty()) {
+                        System.out.println("Сначала необходимо создать таблицу.");
+                    } else {
+                        try {
+                            String firstStr = "";
+                            String secondStr = "";
 
-                        Statement statement = connection.createStatement();
-                        String insertDataQuery = "INSERT INTO " + tableName + " (first_str, second_str) VALUES ('" + firstStr + "', '" + secondStr + "')";
-                        statement.executeUpdate(insertDataQuery);
-                        System.out.println("Данные успешно добавлены.");
-                    } catch (SQLException e) {
-                        System.out.println("Ошибка при добавлении данных: " + e.getMessage());
+                            // Проверка и ввод первой строки
+                            do {
+                                System.out.println("Введите первую строку (минимум 50 символов): ");
+                                firstStr = scanner.nextLine();
+                            } while (firstStr.length() < 5);
+
+                            // Проверка и ввод второй строки
+                            do {
+                                System.out.println("Введите вторую строку (минимум 50 символов): ");
+                                secondStr = scanner.nextLine();
+                            } while (secondStr.length() < 5);
+
+                            // Сохранение введенных строк в MySQL
+                            Statement statement = connection.createStatement();
+                            String insertDataQuery = "INSERT INTO " + tableName + " (first_str, second_str) VALUES ('" + firstStr + "', '" + secondStr + "')";
+                            statement.executeUpdate(insertDataQuery);
+                            System.out.println("Данные успешно добавлены.");
+
+                        } catch (SQLException e) {
+                            System.out.println("Ошибка при добавлении данных: " + e.getMessage());
+                        }
                     }
                     break;
 
+
+
                 case 4:
-                    try {
-                        Statement selectStatement = connection.createStatement();
-                        ResultSet resultSet = selectStatement.executeQuery("SELECT * FROM " + tableName);
-                        while (resultSet.next()) {
-                            String firstStr = resultSet.getString("first_str");
-                            String secondStr = resultSet.getString("second_str");
-                            int lenFirstStr = firstStr.length();
-                            int lenSecondStr = secondStr.length();
+                    // Проверяем, выбрана ли таблица
+                    if (tableName.isEmpty()) {
+                        System.out.println("Сначала необходимо выбрать таблицу.");
+                    } else {
+                        try {
+                            // Проверяем, есть ли данные в таблице
+                            Statement countStatement = connection.createStatement();
+                            ResultSet countResultSet = countStatement.executeQuery("SELECT COUNT(*) AS count FROM " + tableName);
+                            countResultSet.next();
+                            int rowCount = countResultSet.getInt("count");
+                            countResultSet.close();
+                            countStatement.close();
 
-                            System.out.println("Длина первой строки: " + lenFirstStr);
-                            System.out.println("Длина второй строки: " + lenSecondStr);
+                            if (rowCount == 0) {
+                                System.out.println("В таблице отсутствуют данные. Сначала введите строки для выполнения операции.");
+                            } else {
+                                // Если данные есть, выполняем операцию
+                                Statement selectStatement = connection.createStatement();
+                                ResultSet resultSet = selectStatement.executeQuery("SELECT * FROM " + tableName);
+                                while (resultSet.next()) {
+                                    String firstStr = resultSet.getString("first_str");
+                                    String secondStr = resultSet.getString("second_str");
+                                    int lenFirstStr = firstStr.length();
+                                    int lenSecondStr = secondStr.length();
 
-                            // Выполняем обновление каждой строки
-                            Statement updateStatement = connection.createStatement();
-                            String updateQuery = "UPDATE " + tableName + " SET len_1 = " + lenFirstStr + " WHERE first_str = '" + firstStr + "'";
-                            updateStatement.executeUpdate(updateQuery);
+                                    System.out.println("Длина первой строки: " + lenFirstStr);
+                                    System.out.println("Длина второй строки: " + lenSecondStr);
 
-                            updateQuery = "UPDATE " + tableName + " SET len_2 = " + lenSecondStr + " WHERE second_str = '" + secondStr + "'";
-                            updateStatement.executeUpdate(updateQuery);
+                                    // Выполняем обновление каждой строки
+                                    Statement updateStatement = connection.createStatement();
+                                    String updateQuery = "UPDATE " + tableName + " SET len_1 = " + lenFirstStr + " WHERE first_str = '" + firstStr + "'";
+                                    updateStatement.executeUpdate(updateQuery);
+
+                                    updateQuery = "UPDATE " + tableName + " SET len_2 = " + lenSecondStr + " WHERE second_str = '" + secondStr + "'";
+                                    updateStatement.executeUpdate(updateQuery);
+                                }
+                                System.out.println("Результаты успешно сохранены.");
+                            }
+                        } catch (SQLException e) {
+                            System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
                         }
-                        System.out.println("Результаты успешно сохранены.");
-                    } catch (SQLException e) {
-                        System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
                     }
                     break;
 
 
                 case 5:
-                    try {
-                        Statement selectStatement = connection.createStatement();
-                        ResultSet resultSet = selectStatement.executeQuery("SELECT * FROM " + tableName);
+                    if (tableName.isEmpty()) {
+                        System.out.println("Сначала необходимо выбрать таблицу.");
+                    } else {
+                        try {
+                            Statement countStatement = connection.createStatement();
+                            ResultSet countResultSet = countStatement.executeQuery("SELECT COUNT(*) AS count FROM " + tableName);
+                            countResultSet.next();
+                            int rowCount = countResultSet.getInt("count");
+                            countResultSet.close();
+                            countStatement.close();
 
-                        while (resultSet.next()) {
-                            String firstStr = resultSet.getString("first_str");
-                            String secondStr = resultSet.getString("second_str");
-                            String combinedStr = firstStr + secondStr;
-                            System.out.println("Объединенная строка: " + combinedStr);
+                            if (rowCount == 0) {
+                                System.out.println("В таблице отсутствуют данные. Сначала введите строки для выполнения операции.");
+                            } else {
+                                // Ваш код для выполнения операции для кейса 5
+                                Statement selectStatement = connection.createStatement();
+                                ResultSet resultSet = selectStatement.executeQuery("SELECT * FROM " + tableName);
 
-                            Statement updateStatement = connection.createStatement();
-                            String updateQuery = "UPDATE " + tableName + " SET combined_str = '" + combinedStr + "' WHERE first_str = '" + firstStr + "'";
-                            updateStatement.executeUpdate(updateQuery);
-                            updateStatement.close(); // Закрываем statement после использования
+                                while (resultSet.next()) {
+                                    String firstStr = resultSet.getString("first_str");
+                                    String secondStr = resultSet.getString("second_str");
+                                    String combinedStr = firstStr + secondStr;
+                                    System.out.println("Объединенная строка: " + combinedStr);
+
+                                    Statement updateStatement = connection.createStatement();
+                                    String updateQuery = "UPDATE " + tableName + " SET combined_str = '" + combinedStr + "' WHERE first_str = '" + firstStr + "'";
+                                    updateStatement.executeUpdate(updateQuery);
+                                    updateStatement.close(); // Закрываем statement после использования
+                                }
+
+                                selectStatement.close(); // Закрываем statement после использования
+                            }
+                        } catch (SQLException e) {
+                            System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
                         }
-                        selectStatement.close(); // Закрываем statement после использования
-                    } catch (SQLException e) {
-                        System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
                     }
                     break;
+
+
 
                 case 6:
-                    try {
-                        Statement selectStatement = connection.createStatement();
-                        ResultSet resultSet = selectStatement.executeQuery("SELECT * FROM " + tableName);
+                    if (tableName.isEmpty()) {
+                        System.out.println("Сначала необходимо выбрать таблицу.");
+                    } else {
+                        try {
+                            Statement countStatement = connection.createStatement();
+                            ResultSet countResultSet = countStatement.executeQuery("SELECT COUNT(*) AS count FROM " + tableName);
+                            countResultSet.next();
+                            int rowCount = countResultSet.getInt("count");
+                            countResultSet.close();
+                            countStatement.close();
 
-                        while (resultSet.next()) {
-                            String firstStr = resultSet.getString("first_str");
-                            String secondStr = resultSet.getString("second_str");
-                            String comparisonResult = firstStr.equals(secondStr) ? "Строки идентичны" : "Строки не идентичны";
-                            System.out.println("Объединенная строка: " + comparisonResult);
+                            if (rowCount == 0) {
+                                System.out.println("В таблице отсутствуют данные. Сначала введите строки для выполнения операции.");
+                            } else {
+                                // Ваш код для выполнения операции для кейса 6
+                                Statement selectStatement = connection.createStatement();
+                                ResultSet resultSet = selectStatement.executeQuery("SELECT * FROM " + tableName);
 
-                            Statement updateStatement = connection.createStatement();
-                            String updateQuery = "UPDATE " + tableName + " SET comparison_result = '" + comparisonResult + "' WHERE first_str = '" + firstStr + "'";
-                            updateStatement.executeUpdate(updateQuery);
-                            updateStatement.close(); // Закрываем statement после использования
+                                while (resultSet.next()) {
+                                    String firstStr = resultSet.getString("first_str");
+                                    String secondStr = resultSet.getString("second_str");
+                                    String comparisonResult = firstStr.equals(secondStr) ? "Строки идентичны" : "Строки не идентичны";
+                                    System.out.println("Результат сравнения строк: " + comparisonResult);
+
+                                    Statement updateStatement = connection.createStatement();
+                                    String updateQuery = "UPDATE " + tableName + " SET comparison_result = '" + comparisonResult + "' WHERE first_str = '" + firstStr + "'";
+                                    updateStatement.executeUpdate(updateQuery);
+                                    updateStatement.close(); // Закрываем statement после использования
+                                }
+
+                                selectStatement.close(); // Закрываем statement после использования
+                            }
+                        } catch (SQLException e) {
+                            System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
                         }
-                        selectStatement.close(); // Закрываем statement после использования
-                    } catch (SQLException e) {
-                        System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
                     }
                     break;
+
 
                 case 7:
-                    try {
-                        Statement statement = connection.createStatement();
-                        ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName);
+                    if (tableName.isEmpty()) {
+                        System.out.println("Сначала необходимо выбрать таблицу.");
+                    } else {
+                        try {
+                            // Создаем новую книгу Excel и записываем данные
+                            Workbook workbook = new XSSFWorkbook();
+                            Sheet sheet = workbook.createSheet("Data");
 
-                        // Создаем новую книгу Excel
-                        Workbook workbook = new XSSFWorkbook();
-                        Sheet sheet = workbook.createSheet("Data");
+                            // Записываем заголовки столбцов
+                            Row headerRow = sheet.createRow(0);
+                            headerRow.createCell(0).setCellValue("Первая строка");
+                            headerRow.createCell(1).setCellValue("Вторая строка");
+                            headerRow.createCell(2).setCellValue("Длина первой строки");
+                            headerRow.createCell(3).setCellValue("Длина второй строки");
+                            headerRow.createCell(4).setCellValue("Объединенная строка");
+                            headerRow.createCell(5).setCellValue("Результат сравнения");
 
-                        // Записываем заголовки столбцов
-                        Row headerRow = sheet.createRow(0);
-                        ResultSetMetaData metaData = resultSet.getMetaData();
-                        int columnCount = metaData.getColumnCount();
-                        for (int i = 1; i <= columnCount; i++) {
-                            String columnName = metaData.getColumnName(i);
-                            Cell cell = headerRow.createCell(i - 1);
-                            cell.setCellValue(columnName);
-                        }
-
-                        // Записываем данные из ResultSet в книгу Excel
-                        int rowNum = 1;
-                        while (resultSet.next()) {
-                            Row row = sheet.createRow(rowNum++);
-                            for (int i = 1; i <= columnCount; i++) {
-                                Object value = resultSet.getObject(i);
-                                Cell cell = row.createCell(i - 1);
-                                if (value != null) {
-                                    if (value instanceof Number) {
-                                        cell.setCellValue(((Number) value).doubleValue());
-                                    } else {
-                                        cell.setCellValue(value.toString());
-                                    }
-                                }
+                            // Получаем данные из таблицы и записываем их в книгу Excel
+                            ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM " + tableName);
+                            int rowNum = 1;
+                            while (resultSet.next()) {
+                                Row row = sheet.createRow(rowNum++);
+                                row.createCell(0).setCellValue(resultSet.getString("first_str"));
+                                row.createCell(1).setCellValue(resultSet.getString("second_str"));
+                                row.createCell(2).setCellValue(resultSet.getInt("len_1"));
+                                row.createCell(3).setCellValue(resultSet.getInt("len_2"));
+                                row.createCell(4).setCellValue(resultSet.getString("combined_str"));
+                                row.createCell(5).setCellValue(resultSet.getString("comparison_result"));
                             }
-                        }
 
-                        // Сохраняем книгу Excel в файл
-                        String excelFileName = "hard_2_excel.xlsx";
-                        try (FileOutputStream outputStream = new FileOutputStream(excelFileName)) {
-                            workbook.write(outputStream);
-                            System.out.println("Данные успешно сохранены в файл " + excelFileName);
-                        } catch (IOException e) {
-                            System.out.println("Ошибка при сохранении данных в Excel: " + e.getMessage());
+                            // Сохраняем книгу Excel в файл
+                            String excelFileName = "hard_2.xlsx";
+                            try (FileOutputStream outputStream = new FileOutputStream(excelFileName)) {
+                                workbook.write(outputStream);
+                                System.out.println("Данные успешно сохранены в файл " + excelFileName);
+                            } catch (IOException e) {
+                                System.out.println("Ошибка при сохранении данных в Excel: " + e.getMessage());
+                            }
+
+                        } catch (SQLException e) {
+                            System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
                         }
-                    } catch (SQLException e) {
-                        System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
                     }
                     break;
+
 
                 case 0:
                     running = false;
