@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.PreparedStatement;
 import java.util.Scanner;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -12,7 +13,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class hard_3 {
+public class Hard_3 {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         boolean running = true;
@@ -66,13 +67,34 @@ public class hard_3 {
             int choice = scanner.nextInt();
             switch (choice) {
                 case 1:
-                    // Вывод всех таблиц из MySQL
-                    showTables(connection);
+                    try {
+                        Statement statement = connection.createStatement();
+                        ResultSet resultSet = statement.executeQuery("SHOW TABLES");
+                        System.out.println("Таблицы в базе данных:");
+                        while (resultSet.next()) {
+                            tableName = resultSet.getString(1);
+                            System.out.println(tableName);
+                        }
+                    } catch (SQLException e) {
+                        System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
+                    }
                     break;
-
                 case 2:
-                    // Создание таблицы в MySQL
-                    createTable(scanner, connection);
+                    System.out.println("Введите название таблицы: ");
+                    tableName = scanner.next(); // Обновляем tableName здесь
+
+                    // Создаем SQL-запрос для создания таблицы
+                    String createTableQuery = "CREATE TABLE " + tableName +
+                            "(id INT AUTO_INCREMENT PRIMARY KEY, number INT, is_integer BOOLEAN, is_even BOOLEAN)";
+
+                    try {
+                        Statement statement = connection.createStatement();
+                        statement.executeUpdate(createTableQuery);
+                        System.out.println("Таблица успешно создана.");
+                    } catch (SQLException e) {
+                        System.out.println("Ошибка при создании таблицы: " + e.getMessage());
+                        break; // Выходим из case 2
+                    }
                     break;
 
                 case 3:
@@ -140,14 +162,14 @@ public class hard_3 {
         scanner.nextLine(); // Очистка буфера
         String[] numbers = scanner.nextLine().split(" ");
 
-        // Подготовка SQL-запроса для вставки данных
-        String insertQuery = "INSERT INTO your_table_name (number, is_integer, is_even) VALUES (?, ?, ?)";
+        // Подготовка SQL-запроса для вставки данных в конкретную таблицу
+        String insertQuery = "INSERT INTO numbers_table (number, is_integer, is_even) VALUES (?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
             for (String num : numbers) {
                 try {
                     int number = Integer.parseInt(num);
                     preparedStatement.setInt(1, number);
-                    preparedStatement.setBoolean(2, true);
+                    preparedStatement.setBoolean(2, true); // Вы можете изменить логику определения, является ли число целым
                     preparedStatement.setBoolean(3, number % 2 == 0);
                     preparedStatement.executeUpdate();
                     System.out.printf("Число %d добавлено в таблицу.\n", number);
@@ -160,8 +182,10 @@ public class hard_3 {
         }
     }
 
+
     private static void saveDataToExcelAndDisplay(Connection connection) {
-        String query = "SELECT * FROM your_table_name";
+        // Используйте актуальное имя таблицы вместо "your_table_name"
+        String query = "SELECT * FROM numbers_table";
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(query);
              Workbook workbook = new XSSFWorkbook()) {
