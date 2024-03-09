@@ -1,7 +1,9 @@
 import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -12,18 +14,32 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class hard_3 {
+public class Hard_3 {
+    private static String tableName = "";
+
     public static void main(String[] args) {
+        String excelFilePath = "hard_3.xlsx";
+        Connection connection = null;
+
+        // Удаление данных из таблицы Excel при каждом запуске программы
+        clearExcelData(excelFilePath);
+
         Scanner scanner = new Scanner(System.in);
         boolean running = true;
 
-        // Подключение к базе данных
         String url = "jdbc:mysql://localhost:3305/";
         String dbName = "DB";
         String username = "root";
         String password = "root";
 
-        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection(url, username, password);
+            System.out.println("Подключение к базе данных успешно!");
+        } catch (SQLException e) {
+            System.out.println("Ошибка подключения к базе данных: " + e.getMessage());
+            return;
+        }
+
         try {
             connection = DriverManager.getConnection(url, username, password);
             System.out.println("Подключение к базе данных успешно!");
@@ -54,7 +70,7 @@ public class hard_3 {
         }
 
         url += dbName; // Обновляем URL для подключения к созданной базе данных
-        String tableName = "";
+        clearSQLData(connection);
 
         while (running) {
             System.out.println("1. Вывести все таблицы из MySQL.");
@@ -76,13 +92,29 @@ public class hard_3 {
                     break;
 
                 case 3:
-                    // Выполнение задачи базового варианта и сохранение результата в MySQL
-                    executeTaskAndSaveToMySQL(scanner, connection);
+                    try {
+                        if (!tableName.isEmpty()) {
+                            // Выполнение задачи базового варианта и сохранение результата в MySQL
+                            executeTaskAndSaveToMySQL(scanner, connection);
+                        } else {
+                            throw new SQLException("Таблица не выбрана или не создана.");
+                        }
+                    } catch (SQLException e) {
+                        System.out.println("Ошибка: " + e.getMessage());
+                    }
                     break;
 
                 case 4:
-                    // Сохранение всех данных из MySQL в Excel и вывод на экран
-                    saveDataToExcelAndDisplay(connection);
+                    try {
+                        if (!tableName.isEmpty()) {
+                            // Сохранение всех данных из MySQL в Excel и вывод на экран
+                            saveDataToExcelAndDisplay(connection);
+                        } else {
+                            throw new SQLException("Таблица не выбрана или не создана.");
+                        }
+                    } catch (SQLException e) {
+                        System.out.println("Ошибка: " + e.getMessage());
+                    }
                     break;
 
                 case 0:
@@ -104,7 +136,23 @@ public class hard_3 {
             System.out.println("Ошибка при закрытии подключения к базе данных: " + e.getMessage());
         }
     }
+    private static void clearExcelData(String excelFilePath) {
+        File excelFile = new File(excelFilePath);
+        if (excelFile.exists()) {
+            excelFile.delete();
+            System.out.println("Previous Excel data cleared.");
+        }
+    }
 
+    private static void clearSQLData(Connection connection) {
+        String clearTableQuery = "TRUNCATE TABLE numbers_table";
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate(clearTableQuery);
+            System.out.println("Previous SQL data cleared.");
+        } catch (SQLException e) {
+            System.out.println("Error clearing SQL data: " + e.getMessage());
+        }
+    }
     private static void showTables(Connection connection) {
         try {
             Statement statement = connection.createStatement();
@@ -120,11 +168,11 @@ public class hard_3 {
 
     private static void createTable(Scanner scanner, Connection connection) {
         System.out.println("Введите название таблицы: ");
-        String tableName = scanner.next();
+        tableName = scanner.next(); // Обновляем имя текущей таблицы
 
         // Создаем SQL-запрос для создания таблицы
-        String createTableQuery = "CREATE TABLE " + tableName +
-                "(id INT AUTO_INCREMENT PRIMARY KEY, number INT, is_integer BOOLEAN, is_even BOOLEAN)";
+        String createTableQuery = "CREATE TABLE IF NOT EXISTS " + tableName +
+                "(id INT AUTO_INCREMENT PRIMARY KEY, number INT, is_integer BOOLEAN, is_even BOOLEAN, note VARCHAR(255))";
 
         try {
             Statement statement = connection.createStatement();
@@ -140,19 +188,37 @@ public class hard_3 {
         scanner.nextLine(); // Очистка буфера
         String[] numbers = scanner.nextLine().split(" ");
 
-        // Подготовка SQL-запроса для вставки данных
-        String insertQuery = "INSERT INTO your_table_name (number, is_integer, is_even) VALUES (?, ?, ?)";
+        String insertQuery = "INSERT INTO numbers_table (number, is_integer, is_even, note) VALUES (?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
             for (String num : numbers) {
                 try {
-                    int number = Integer.parseInt(num);
-                    preparedStatement.setInt(1, number);
-                    preparedStatement.setBoolean(2, true);
-                    preparedStatement.setBoolean(3, number % 2 == 0);
+                    double number = Double.parseDouble(num);
+                    boolean isInteger;
+                    boolean isEven;
+                    String note;
+
+                    if (number == 0) {
+                        System.out.println("Число 0 не является натуральным числом.");
+                        continue; // Пропускаем обработку числа 0
+                    } else if (number % 1 == 0) {
+                        isInteger = true;
+                        isEven = number % 2 == 0;
+                        note = isEven ? "Целое, Четное" : "Целое, Нечетное";
+                    } else {
+                        isInteger = false;
+                        isEven = false;
+                        note = "Нецелое число";
+                    }
+
+                    preparedStatement.setString(1, num);
+                    preparedStatement.setBoolean(2, isInteger);
+                    preparedStatement.setBoolean(3, isEven);
+                    preparedStatement.setString(4, note);
                     preparedStatement.executeUpdate();
-                    System.out.printf("Число %d добавлено в таблицу.\n", number);
+
+                    System.out.printf("Число %s добавлено в таблицу. %s\n", num, note);
                 } catch (NumberFormatException e) {
-                    System.out.printf("'%s' не является целым числом.\n", num);
+                    System.out.printf("'%s' не является числом.\n", num);
                 }
             }
         } catch (SQLException e) {
@@ -161,7 +227,7 @@ public class hard_3 {
     }
 
     private static void saveDataToExcelAndDisplay(Connection connection) {
-        String query = "SELECT * FROM your_table_name";
+        String query = "SELECT * FROM numbers_table";
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(query);
              Workbook workbook = new XSSFWorkbook()) {
@@ -173,21 +239,23 @@ public class hard_3 {
             headerRow.createCell(1).setCellValue("Number");
             headerRow.createCell(2).setCellValue("Is Integer");
             headerRow.createCell(3).setCellValue("Is Even");
+            headerRow.createCell(4).setCellValue("Note"); // Добавляем заголовок для колонки Note
 
             // Заполнение данных
             int rowNum = 1;
             while (resultSet.next()) {
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(resultSet.getInt("id"));
-                row.createCell(1).setCellValue(resultSet.getInt("number"));
-                row.createCell(2).setCellValue(resultSet.getBoolean("is_integer"));
-                row.createCell(3).setCellValue(resultSet.getBoolean("is_even"));
+                row.createCell(1).setCellValue(resultSet.getString("number")); // Исправлено на getString
+                row.createCell(2).setCellValue(resultSet.getBoolean("is_integer") ? "Yes" : "No"); // Исправлен вывод на более понятный
+                row.createCell(3).setCellValue(resultSet.getBoolean("is_even") ? "Yes" : "No"); // Исправлен вывод на более понятный
+                row.createCell(4).setCellValue(resultSet.getString("note")); // Добавляем данные для колонки Note
             }
 
             // Сохранение в файл
-            try (FileOutputStream outputStream = new FileOutputStream("data.xlsx")) {
+            try (FileOutputStream outputStream = new FileOutputStream("hard3.xlsx")) {
                 workbook.write(outputStream);
-                System.out.println("Данные успешно сохранены в файл 'data.xlsx'.");
+                System.out.println("Данные успешно сохранены в файл 'hard3.xlsx'.");
             } catch (IOException e) {
                 System.out.println("Ошибка при сохранении данных в файл: " + e.getMessage());
             }
@@ -206,6 +274,7 @@ public class hard_3 {
                             System.out.print(cell.getBooleanCellValue() + "\t");
                             break;
                         default:
+                            System.out.print("Unknown\t");
                             break;
                     }
                 }
