@@ -40,14 +40,6 @@ public class Hard_3 {
             return;
         }
 
-        try {
-            connection = DriverManager.getConnection(url, username, password);
-            System.out.println("Подключение к базе данных успешно!");
-        } catch (SQLException e) {
-            System.out.println("Ошибка подключения к базе данных: " + e.getMessage());
-            return; // Прерываем выполнение программы, если не удалось подключиться к базе данных
-        }
-
         // Выбор базы данных
         try {
             Statement statement = connection.createStatement();
@@ -140,7 +132,7 @@ public class Hard_3 {
         File excelFile = new File(excelFilePath);
         if (excelFile.exists()) {
             excelFile.delete();
-            System.out.println("Previous Excel data cleared.");
+            System.out.println(" ");
         }
     }
 
@@ -148,7 +140,7 @@ public class Hard_3 {
         String clearTableQuery = "TRUNCATE TABLE numbers_table";
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(clearTableQuery);
-            System.out.println("Previous SQL data cleared.");
+            System.out.println(" ");
         } catch (SQLException e) {
             System.out.println("Error clearing SQL data: " + e.getMessage());
         }
@@ -172,7 +164,7 @@ public class Hard_3 {
 
         // Создаем SQL-запрос для создания таблицы
         String createTableQuery = "CREATE TABLE IF NOT EXISTS " + tableName +
-                "(id INT AUTO_INCREMENT PRIMARY KEY, number INT, is_integer BOOLEAN, is_even BOOLEAN, note VARCHAR(255))";
+                "(id INT AUTO_INCREMENT PRIMARY KEY, number DOUBLE, is_integer BOOLEAN, is_even BOOLEAN, note VARCHAR(255))";
 
         try {
             Statement statement = connection.createStatement();
@@ -210,7 +202,7 @@ public class Hard_3 {
                         note = "Нецелое число";
                     }
 
-                    preparedStatement.setString(1, num);
+                    preparedStatement.setDouble(1, number);
                     preparedStatement.setBoolean(2, isInteger);
                     preparedStatement.setBoolean(3, isEven);
                     preparedStatement.setString(4, note);
@@ -246,9 +238,9 @@ public class Hard_3 {
             while (resultSet.next()) {
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(resultSet.getInt("id"));
-                row.createCell(1).setCellValue(resultSet.getString("number")); // Исправлено на getString
-                row.createCell(2).setCellValue(resultSet.getBoolean("is_integer") ? "Yes" : "No"); // Исправлен вывод на более понятный
-                row.createCell(3).setCellValue(resultSet.getBoolean("is_even") ? "Yes" : "No"); // Исправлен вывод на более понятный
+                row.createCell(1).setCellValue(resultSet.getDouble("number")); //
+                row.createCell(2).setCellValue(resultSet.getBoolean("is_integer") ? "Yes" : "No");
+                row.createCell(3).setCellValue(resultSet.getBoolean("is_even") ? "Yes" : "No");
                 row.createCell(4).setCellValue(resultSet.getString("note")); // Добавляем данные для колонки Note
             }
 
