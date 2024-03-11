@@ -13,10 +13,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.sql.DatabaseMetaData;
 
 public class Hard_3 {
-    private static String tableName = "";
-
     public static void main(String[] args) {
         String excelFilePath = "hard_3.xlsx";
         Connection connection = null;
@@ -40,29 +39,18 @@ public class Hard_3 {
             return;
         }
 
-        // Выбор базы данных
+        // Выбор или создание базы данных
         try {
             Statement statement = connection.createStatement();
+            statement.executeUpdate("CREATE DATABASE IF NOT EXISTS " + dbName);
             statement.executeUpdate("USE " + dbName);
-            System.out.println("База данных успешно выбрана.");
+            System.out.println("База данных успешно выбрана или создана.");
         } catch (SQLException e) {
-            System.out.println("Ошибка при выборе базы данных: " + e.getMessage());
-            return;
-        }
-
-        // Создание базы данных, если она не существует
-        try {
-            Statement statement = connection.createStatement();
-            String createDBQuery = "CREATE DATABASE IF NOT EXISTS " + dbName;
-            statement.executeUpdate(createDBQuery);
-            System.out.println("База данных успешно создана или уже существует.");
-        } catch (SQLException e) {
-            System.out.println("Ошибка при создании базы данных: " + e.getMessage());
+            System.out.println("Ошибка при выборе или создании базы данных: " + e.getMessage());
             return;
         }
 
         url += dbName; // Обновляем URL для подключения к созданной базе данных
-        clearSQLData(connection);
 
         while (running) {
             System.out.println("1. Вывести все таблицы из MySQL.");
@@ -85,9 +73,10 @@ public class Hard_3 {
 
                 case 3:
                     try {
-                        if (!tableName.isEmpty()) {
-                            // Выполнение задачи базового варианта и сохранение результата в MySQL
-                            executeTaskAndSaveToMySQL(scanner, connection);
+                        System.out.print("Введите название таблицы: ");
+                        String tableName = scanner.next();
+                        if (tableName != null && !tableName.isEmpty()) {
+                            executeTaskAndSaveToMySQL(scanner, connection, tableName);
                         } else {
                             throw new SQLException("Таблица не выбрана или не создана.");
                         }
@@ -98,9 +87,10 @@ public class Hard_3 {
 
                 case 4:
                     try {
-                        if (!tableName.isEmpty()) {
-                            // Сохранение всех данных из MySQL в Excel и вывод на экран
-                            saveDataToExcelAndDisplay(connection);
+                        System.out.print("Введите название таблицы: ");
+                        String tableName = scanner.next();
+                        if (tableName != null && !tableName.isEmpty()) {
+                            saveDataToExcelAndDisplay(connection, tableName);
                         } else {
                             throw new SQLException("Таблица не выбрана или не создана.");
                         }
@@ -108,7 +98,6 @@ public class Hard_3 {
                         System.out.println("Ошибка: " + e.getMessage());
                     }
                     break;
-
                 case 0:
                     running = false;
                     break;
@@ -120,14 +109,14 @@ public class Hard_3 {
 
         // Закрытие подключения к базе данных
         try {
-            if (connection != null) {
-                connection.close();
+            if (connection != null) { connection.close();
                 System.out.println("Подключение к базе данных закрыто.");
             }
         } catch (SQLException e) {
             System.out.println("Ошибка при закрытии подключения к базе данных: " + e.getMessage());
         }
     }
+
     private static void clearExcelData(String excelFilePath) {
         File excelFile = new File(excelFilePath);
         if (excelFile.exists()) {
@@ -136,15 +125,6 @@ public class Hard_3 {
         }
     }
 
-    private static void clearSQLData(Connection connection) {
-        String clearTableQuery = "TRUNCATE TABLE numbers_table";
-        try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(clearTableQuery);
-            System.out.println(" ");
-        } catch (SQLException e) {
-            System.out.println("Error clearing SQL data: " + e.getMessage());
-        }
-    }
     private static void showTables(Connection connection) {
         try {
             Statement statement = connection.createStatement();
@@ -160,11 +140,10 @@ public class Hard_3 {
 
     private static void createTable(Scanner scanner, Connection connection) {
         System.out.println("Введите название таблицы: ");
-        tableName = scanner.next(); // Обновляем имя текущей таблицы
+        String tableName = scanner.next();
 
-        // Создаем SQL-запрос для создания таблицы
         String createTableQuery = "CREATE TABLE IF NOT EXISTS " + tableName +
-                "(id INT AUTO_INCREMENT PRIMARY KEY, number DOUBLE, is_integer BOOLEAN, is_even BOOLEAN, note VARCHAR(255))";
+                "(id INT AUTO_INCREMENT PRIMARY KEY, number FLOAT, is_integer BOOLEAN, is_even BOOLEAN, note VARCHAR(255))";
 
         try {
             Statement statement = connection.createStatement();
@@ -175,23 +154,24 @@ public class Hard_3 {
         }
     }
 
-    private static void executeTaskAndSaveToMySQL(Scanner scanner, Connection connection) {
+
+    private static void executeTaskAndSaveToMySQL(Scanner scanner, Connection connection, String tableName) {
         System.out.println("Введите числа (через пробел): ");
         scanner.nextLine(); // Очистка буфера
         String[] numbers = scanner.nextLine().split(" ");
 
-        String insertQuery = "INSERT INTO numbers_table (number, is_integer, is_even, note) VALUES (?, ?, ?, ?)";
+        String insertQuery = "INSERT INTO " + tableName + " (number, is_integer, is_even, note) VALUES (?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
             for (String num : numbers) {
                 try {
-                    double number = Double.parseDouble(num);
+                    Float number = Float.parseFloat(num);
                     boolean isInteger;
                     boolean isEven;
                     String note;
 
                     if (number == 0) {
                         System.out.println("Число 0 не является натуральным числом.");
-                        continue; // Пропускаем обработку числа 0
+                        continue;
                     } else if (number % 1 == 0) {
                         isInteger = true;
                         isEven = number % 2 == 0;
@@ -202,7 +182,7 @@ public class Hard_3 {
                         note = "Нецелое число";
                     }
 
-                    preparedStatement.setDouble(1, number);
+                    preparedStatement.setFloat(1, number);
                     preparedStatement.setBoolean(2, isInteger);
                     preparedStatement.setBoolean(3, isEven);
                     preparedStatement.setString(4, note);
@@ -218,8 +198,8 @@ public class Hard_3 {
         }
     }
 
-    private static void saveDataToExcelAndDisplay(Connection connection) {
-        String query = "SELECT * FROM numbers_table";
+    private static void saveDataToExcelAndDisplay(Connection connection, String tableName) {
+        String query = "SELECT * FROM " + tableName;
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(query);
              Workbook workbook = new XSSFWorkbook()) {
@@ -231,17 +211,17 @@ public class Hard_3 {
             headerRow.createCell(1).setCellValue("Number");
             headerRow.createCell(2).setCellValue("Is Integer");
             headerRow.createCell(3).setCellValue("Is Even");
-            headerRow.createCell(4).setCellValue("Note"); // Добавляем заголовок для колонки Note
+            headerRow.createCell(4).setCellValue("Note");
 
             // Заполнение данных
             int rowNum = 1;
             while (resultSet.next()) {
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(resultSet.getInt("id"));
-                row.createCell(1).setCellValue(resultSet.getDouble("number")); //
+                row.createCell(1).setCellValue(resultSet.getFloat("number"));
                 row.createCell(2).setCellValue(resultSet.getBoolean("is_integer") ? "Yes" : "No");
                 row.createCell(3).setCellValue(resultSet.getBoolean("is_even") ? "Yes" : "No");
-                row.createCell(4).setCellValue(resultSet.getString("note")); // Добавляем данные для колонки Note
+                row.createCell(4).setCellValue(resultSet.getString("note"));
             }
 
             // Сохранение в файл
