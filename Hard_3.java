@@ -232,7 +232,6 @@ public class Hard_3 {
                 System.out.println("Ошибка при сохранении данных в файл: " + e.getMessage());
             }
 
-            // Вывод данных на экран
             for (Row row : sheet) {
                 for (Cell cell : row) {
                     switch (cell.getCellType()) {
