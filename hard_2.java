@@ -16,11 +16,13 @@
 
 import java.sql.*;
 import java.util.Scanner;
+
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Cell;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -128,13 +130,13 @@ public class hard_2 {
                             do {
                                 System.out.println("Введите первую строку (минимум 50 символов): ");
                                 firstStr = scanner.nextLine();
-                            } while (firstStr.length() < 5);
+                            } while (firstStr.length() < 50);
 
                             // Проверка и ввод второй строки
                             do {
                                 System.out.println("Введите вторую строку (минимум 50 символов): ");
                                 secondStr = scanner.nextLine();
-                            } while (secondStr.length() < 5);
+                            } while (secondStr.length() < 50);
 
                             // Сохранение введенных строк в MySQL
                             Statement statement = connection.createStatement();
@@ -147,7 +149,6 @@ public class hard_2 {
                         }
                     }
                     break;
-
 
 
                 case 4:
@@ -236,7 +237,6 @@ public class hard_2 {
                     break;
 
 
-
                 case 6:
                     if (tableName.isEmpty()) {
                         System.out.println("Сначала необходимо выбрать таблицу.");
@@ -309,13 +309,18 @@ public class hard_2 {
                             }
 
                             // Сохраняем книгу Excel в файл
-                            String excelFileName = "hard_2.xlsx";
-                            try (FileOutputStream outputStream = new FileOutputStream(excelFileName)) {
-                                workbook.write(outputStream);
-                                System.out.println("Данные успешно сохранены в файл " + excelFileName);
-                            } catch (IOException e) {
-                                System.out.println("Ошибка при сохранении данных в Excel: " + e.getMessage());
-                            }
+                            Thread excelThread = new Thread(() -> {
+                                // Сохраняем книгу Excel в файл
+                                String excelFileName = "hard_2.xlsx";
+                                try (FileOutputStream outputStream = new FileOutputStream(excelFileName)) {
+                                    workbook.write(outputStream);
+                                    System.out.println("Данные успешно сохранены в файл " + excelFileName);
+                                } catch (IOException e) {
+                                    System.out.println("Ошибка при сохранении данных в Excel: " + e.getMessage());
+                                }
+                            });
+                            excelThread.start();
+
 
                         } catch (SQLException e) {
                             System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
