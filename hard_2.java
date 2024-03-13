@@ -1,30 +1,22 @@
-///Сложный вариант. Строковый тип данных. Реализовать программу с интерактивным
-//консольным меню, (т.е. вывод списка действий по цифрам. При этом при нажатии на цифру у нас
-//должно выполняться определенное действие). Задания полностью идентичны базовому варианту.
-//При этом в программе данные пункты должны называться следующим образом:
-//1. Вывести все таблицы из MySQL.
-//2. Создать таблицу в MySQL.
-//3. Ввести две строки с клавиатуры, результат сохранить в MySQL с последующим выводом в
-//консоль.
-//4. Подсчитать размер ранее введенных строк, результат сохранить в MySQL с последующим
-//выводом в консоль.
-//5. Объединить две строки в единое целое, результат сохранить в MySQL с последующим выводом
-//в консоль.
-//6. Сравнить две ранее введенные строки, результат сохранить в MySQL с последующим выводом
-//в консоль.
-//7. Сохранить все данные (вышеполученные результаты) из MySQL в Excel и вывести на экран.
+/* Строковый тип данных. Реализовать программу с интерактивным консольным меню.
 
-import java.sql.*;
-import java.util.Scanner;
+1. Вывести все таблицы из MySQL.
+2. Создать таблицу в MySQL.
+3. Ввести две строки с клавиатуры, результат сохранить в MySQL с последующим выводом в консоль.
+4. Подсчитать размер ранее введенных строк, результат сохранить в MySQL с последующим выводом в консоль.
+5. Объединить две строки в единое целое, результат сохранить в MySQL с последующим выводом в консоль.
+6. Сравнить две ранее введенные строки, результат сохранить в MySQL с последующим выводом в консоль.
+7. Сохранить все данные (вышеполученные результаты) из MySQL в Excel и вывести на экран. */
 
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Cell;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.*;
+import java.util.Scanner;
 
 public class hard_2 {
     public static void main(String[] args) {
@@ -46,7 +38,6 @@ public class hard_2 {
             return; // Прерываем выполнение программы, если не удалось подключиться к базе данных
         }
 
-        // Выбор базы данных
         try {
             Statement statement = connection.createStatement();
             statement.executeUpdate("USE " + dbName);
@@ -55,7 +46,7 @@ public class hard_2 {
             return;
         }
 
-        // Создание базы данных, если она не существует
+        // Создание базы данных, если ее не существует
         try {
             Statement statement = connection.createStatement();
             String createDBQuery = "CREATE DATABASE IF NOT EXISTS " + dbName;
@@ -80,11 +71,9 @@ public class hard_2 {
             System.out.println("0. Выйти из программы.");
             System.out.println("Выберите действие: ");
             int choice = scanner.nextInt();
-            scanner.nextLine(); // Считываем символ новой строки
+            scanner.nextLine();
 
             switch (choice) {
-                // Кейсы
-
                 case 1:
                     try {
                         Statement statement = connection.createStatement();
@@ -101,7 +90,7 @@ public class hard_2 {
 
                 case 2:
                     System.out.println("Введите название таблицы: ");
-                    tableName = scanner.next(); // Обновляем tableName здесь
+                    tableName = scanner.next();
 
                     // Создаем SQL-запрос для создания таблицы
                     String createTableQuery = "CREATE TABLE IF NOT EXISTS " + tableName +
@@ -114,7 +103,7 @@ public class hard_2 {
                         System.out.println("Таблица успешно создана.");
                     } catch (SQLException e) {
                         System.out.println("Ошибка при создании таблицы: " + e.getMessage());
-                        break; // Выходим из case 2
+                        break; //
                     }
                     break;
 
@@ -212,7 +201,6 @@ public class hard_2 {
                             if (rowCount == 0) {
                                 System.out.println("В таблице отсутствуют данные. Сначала введите строки для выполнения операции.");
                             } else {
-                                // Ваш код для выполнения операции для кейса 5
                                 Statement selectStatement = connection.createStatement();
                                 ResultSet resultSet = selectStatement.executeQuery("SELECT * FROM " + tableName);
 
@@ -225,17 +213,16 @@ public class hard_2 {
                                     Statement updateStatement = connection.createStatement();
                                     String updateQuery = "UPDATE " + tableName + " SET combined_str = '" + combinedStr + "' WHERE first_str = '" + firstStr + "'";
                                     updateStatement.executeUpdate(updateQuery);
-                                    updateStatement.close(); // Закрываем statement после использования
+                                    updateStatement.close();
                                 }
 
-                                selectStatement.close(); // Закрываем statement после использования
+                                selectStatement.close();
                             }
                         } catch (SQLException e) {
                             System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
                         }
                     }
                     break;
-
 
                 case 6:
                     if (tableName.isEmpty()) {
@@ -252,7 +239,6 @@ public class hard_2 {
                             if (rowCount == 0) {
                                 System.out.println("В таблице отсутствуют данные. Сначала введите строки для выполнения операции.");
                             } else {
-                                // Ваш код для выполнения операции для кейса 6
                                 Statement selectStatement = connection.createStatement();
                                 ResultSet resultSet = selectStatement.executeQuery("SELECT * FROM " + tableName);
 
@@ -265,10 +251,10 @@ public class hard_2 {
                                     Statement updateStatement = connection.createStatement();
                                     String updateQuery = "UPDATE " + tableName + " SET comparison_result = '" + comparisonResult + "' WHERE first_str = '" + firstStr + "'";
                                     updateStatement.executeUpdate(updateQuery);
-                                    updateStatement.close(); // Закрываем statement после использования
+                                    updateStatement.close();
                                 }
 
-                                selectStatement.close(); // Закрываем statement после использования
+                                selectStatement.close();
                             }
                         } catch (SQLException e) {
                             System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
@@ -310,7 +296,6 @@ public class hard_2 {
 
                             // Сохраняем книгу Excel в файл
                             Thread excelThread = new Thread(() -> {
-                                // Сохраняем книгу Excel в файл
                                 String excelFileName = "hard_2.xlsx";
                                 try (FileOutputStream outputStream = new FileOutputStream(excelFileName)) {
                                     workbook.write(outputStream);
