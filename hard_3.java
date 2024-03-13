@@ -1,3 +1,10 @@
+/*Реализовать программу с интерактивным консольным меню, (т.е. вывод списка действий по цифрам. При этом при нажатии на цифру у нас должно выполняться определенное действие). Задания полностью идентичны базовому варианту.
+При этом в программе данные пункты должны называться следующим образом:
+1. Вывести все таблицы из MySQL.
+2. Создать таблицу в MySQL.
+3. Выполнение задачи базового варианта, результат сохранить в MySQL с последующим выводом в консоль.
+4. Сохранить все данные (вышеполученные результаты) из MySQL в Excel и вывести на экран. */
+
 import java.io.FileOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +21,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class Hard_3 {
+public class hard_3 {
     private static String tableName = "";
 
     public static void main(String[] args) {
