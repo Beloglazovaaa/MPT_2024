@@ -83,7 +83,7 @@ public class hard_5 {
                     break;
 
                 case 4:
-                    concatenateStringsAndSave(scanner, connection);
+                    concatenateStringsAndSave(connection);
                     break;
 
                 case 5:
@@ -156,11 +156,52 @@ public class hard_5 {
         System.out.println("Введите вторую строку: ");
         String secondString = scanner.nextLine();
         StringBuffer reversedSecondString = new StringBuffer(secondString).reverse();
+
         System.out.println("Перевернутая первая строка: " + reversedFirstString);
         System.out.println("Перевернутая вторая строка: " + reversedSecondString);
 
-        // Сохранение перевернутых строк в базу данных
+        // Сохраняем перевернутые строки в базу данных
         saveToDatabase(reversedFirstString.toString(), reversedSecondString.toString(), connection);
+    }
+
+    private static void concatenateStringsAndSave(Connection connection) {
+        // Получаем строки из базы данных
+        String firstString = getFirstStringFromDatabase(connection);
+        String secondString = getSecondStringFromDatabase(connection);
+
+        // Объединяем строки
+        String concatenatedString = firstString + secondString;
+
+        // Сохраняем объединенную строку в базу данных
+        saveConcatenatedStringToDatabase(concatenatedString, connection);
+    }
+
+    private static String getFirstStringFromDatabase(Connection connection) {
+        // Получаем первую строку из базы данных
+        String query = "SELECT string FROM " + tableName + " WHERE id = 1";
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(query)) {
+            if (resultSet.next()) {
+                return resultSet.getString("string");
+            }
+        } catch (SQLException e) {
+            System.out.println("Ошибка при получении данных из таблицы: " + e.getMessage());
+        }
+        return "";
+    }
+
+    private static String getSecondStringFromDatabase(Connection connection) {
+        // Получаем вторую строку из базы данных
+        String query = "SELECT string FROM " + tableName + " WHERE id = 2";
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(query)) {
+            if (resultSet.next()) {
+                return resultSet.getString("string");
+            }
+        } catch (SQLException e) {
+            System.out.println("Ошибка при получении данных из таблицы: " + e.getMessage());
+        }
+        return "";
     }
 
     private static void saveToDatabase(String reversedFirstString, String reversedSecondString, Connection connection) {
@@ -176,29 +217,6 @@ public class hard_5 {
         } catch (SQLException e) {
             System.out.println("Ошибка при вставке данных в таблицу: " + e.getMessage());
         }
-    }
-
-    private static void concatenateStringsAndSave(Scanner scanner, Connection connection) {
-        // Объединяем строки, которые были введены в 3 пункте
-        String concatenatedString = reverseStrings(scanner, connection);
-
-        // Сохранение объединенной строки в базу данных
-        saveConcatenatedStringToDatabase(concatenatedString, connection);
-    }
-
-    private static String reverseStrings(Scanner scanner, Connection connection) {
-        System.out.println("Введите первую строку: ");
-        String firstString = scanner.nextLine();
-        StringBuffer reversedFirstString = new StringBuffer(firstString).reverse();
-
-        System.out.println("Введите вторую строку: ");
-        String secondString = scanner.nextLine();
-        StringBuffer reversedSecondString = new StringBuffer(secondString).reverse();
-
-        System.out.println("Перевернутая первая строка: " + reversedFirstString);
-        System.out.println("Перевернутая вторая строка: " + reversedSecondString);
-
-        return reversedFirstString.toString() + reversedSecondString.toString();
     }
 
     private static void saveConcatenatedStringToDatabase(String concatenatedString, Connection connection) {
@@ -225,6 +243,9 @@ public class hard_5 {
             Row headerRow = sheet.createRow(0);
             headerRow.createCell(0).setCellValue("ID");
             headerRow.createCell(1).setCellValue("String");
+            headerRow.createCell(2).setCellValue("Reversed String 1");
+            headerRow.createCell(3).setCellValue("Reversed String 2");
+            headerRow.createCell(4).setCellValue("Concatenated String");
 
             // Заполнение данных
             int rowNum = 1;
@@ -232,6 +253,18 @@ public class hard_5 {
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(resultSet.getInt("id"));
                 row.createCell(1).setCellValue(resultSet.getString("string"));
+
+                // Получение перевернутых строк из исходной строки
+                String originalString = resultSet.getString("string");
+                String reversedFirstString = new StringBuilder(originalString).reverse().toString();
+                String reversedSecondString = new StringBuilder(originalString).reverse().toString();
+
+                row.createCell(2).setCellValue(reversedFirstString);
+                row.createCell(3).setCellValue(reversedSecondString);
+
+                // Объединение строк
+                String concatenatedString = reversedFirstString + reversedSecondString;
+                row.createCell(4).setCellValue(concatenatedString);
             }
 
             // Сохранение в файл
@@ -266,6 +299,3 @@ public class hard_5 {
         }
     }
 }
-
-
-
