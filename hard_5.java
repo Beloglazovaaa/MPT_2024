@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -55,8 +56,6 @@ public class hard_5 {
             return;
         }
 
-        url += dbName;
-        clearSQLData(connection);
 
         while (running) {
             System.out.println("1. Вывести все таблицы из MySQL.");
@@ -109,15 +108,6 @@ public class hard_5 {
         }
     }
 
-    private static void clearSQLData(Connection connection) {
-        String clearTableQuery = "TRUNCATE TABLE " + tableName;
-        try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(clearTableQuery);
-            System.out.println("Таблица очищена.");
-        } catch (SQLException e) {
-            System.out.println("Ошибка при очистке данных таблицы: " + e.getMessage());
-        }
-    }
 
     private static void showTables(Connection connection) {
         try {
@@ -243,9 +233,8 @@ public class hard_5 {
             Row headerRow = sheet.createRow(0);
             headerRow.createCell(0).setCellValue("ID");
             headerRow.createCell(1).setCellValue("String");
-            headerRow.createCell(2).setCellValue("Reversed String 1");
-            headerRow.createCell(3).setCellValue("Reversed String 2");
-            headerRow.createCell(4).setCellValue("Concatenated String");
+            headerRow.createCell(2).setCellValue("Reversed String");
+            headerRow.createCell(3).setCellValue("Concatenated String");
 
             // Заполнение данных
             int rowNum = 1;
@@ -254,17 +243,19 @@ public class hard_5 {
                 row.createCell(0).setCellValue(resultSet.getInt("id"));
                 row.createCell(1).setCellValue(resultSet.getString("string"));
 
-                // Получение перевернутых строк из исходной строки
+                // Получение перевернутой строки из исходной
                 String originalString = resultSet.getString("string");
-                String reversedFirstString = new StringBuilder(originalString).reverse().toString();
-                String reversedSecondString = new StringBuilder(originalString).reverse().toString();
+                String reversedString = new StringBuilder(originalString).reverse().toString();
+                row.createCell(2).setCellValue(reversedString);
 
-                row.createCell(2).setCellValue(reversedFirstString);
-                row.createCell(3).setCellValue(reversedSecondString);
+                // Объединение перевернутой строки
+                String concatenatedString = originalString + reversedString;
+                row.createCell(3).setCellValue(concatenatedString);
+            }
 
-                // Объединение строк
-                String concatenatedString = reversedFirstString + reversedSecondString;
-                row.createCell(4).setCellValue(concatenatedString);
+            // Автоматическое выравнивание по ширине колонки
+            for (int i = 0; i < 4; i++) {
+                sheet.autoSizeColumn(i);
             }
 
             // Сохранение в файл
