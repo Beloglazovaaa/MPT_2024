@@ -10,8 +10,6 @@
 4. Добавить одну строку в другую, результат сохранить в MySQL с последующим выводом в консоль.
 5. Сохранить все данные (вышеполученные результаты) из MySQL в Excel и вывести на экран. */
 
-
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
