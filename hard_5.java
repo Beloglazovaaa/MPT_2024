@@ -139,12 +139,26 @@ public class hard_5 {
     }
 
     private static void reverseStringsAndSave(Scanner scanner, Connection connection) {
-        System.out.println("Введите первую строку: ");
+        // Проверяем, что таблица была создана
+        if (tableName.isEmpty()) {
+            System.out.println("Ошибка: таблица не была создана. Сначала создайте таблицу.");
+            return;
+        }
+
+        System.out.println("Введите первую строку (не менее 50 символов): ");
         String firstString = scanner.nextLine();
+        if (firstString.length() < 50) {
+            System.out.println("Ошибка: введенная строка слишком короткая.");
+            return;
+        }
         StringBuffer reversedFirstString = new StringBuffer(firstString).reverse();
 
-        System.out.println("Введите вторую строку: ");
+        System.out.println("Введите вторую строку (не менее 50 символов): ");
         String secondString = scanner.nextLine();
+        if (secondString.length() < 50) {
+            System.out.println("Ошибка: введенная строка слишком короткая.");
+            return;
+        }
         StringBuffer reversedSecondString = new StringBuffer(secondString).reverse();
 
         System.out.println("Перевернутая первая строка: " + reversedFirstString);
@@ -155,9 +169,21 @@ public class hard_5 {
     }
 
     private static void concatenateStringsAndSave(Connection connection) {
+        // Проверяем, что таблица была создана
+        if (tableName.isEmpty()) {
+            System.out.println("Ошибка: таблица не была создана. Сначала создайте таблицу.");
+            return;
+        }
+
         // Получаем строки из базы данных
         String firstString = getFirstStringFromDatabase(connection);
         String secondString = getSecondStringFromDatabase(connection);
+
+        // Проверяем, что строки были получены из базы данных
+        if (firstString.isEmpty() || secondString.isEmpty()) {
+            System.out.println("Ошибка: строки не были получены из базы данных.");
+            return;
+        }
 
         // Объединяем строки
         String concatenatedString = firstString + secondString;
@@ -165,6 +191,7 @@ public class hard_5 {
         // Сохраняем объединенную строку в базу данных
         saveConcatenatedStringToDatabase(concatenatedString, connection);
     }
+
 
     private static String getFirstStringFromDatabase(Connection connection) {
         // Получаем первую строку из базы данных
