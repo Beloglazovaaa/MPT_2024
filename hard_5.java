@@ -1,15 +1,3 @@
-/* Строковый тип данных (класс StringBuffer).
-Ввести две строки (не менее 50 символов каждая) с клавиатуры.
-Необходимо вывести на экран две введенных ранее строки,
-изменить порядок символов на обратный и добавить одну строку в другую.
-
-Реализовать программу с интерактивным консольным меню:
-1. Вывести все таблицы из MySQL.
-2. Создать таблицу в MySQL.
-3. Изменить порядок символов строки на обратный, результат сохранить в MySQL с последующим выводом в консоль.
-4. Добавить одну строку в другую, результат сохранить в MySQL с последующим выводом в консоль.
-5. Сохранить все данные (вышеполученные результаты) из MySQL в Excel и вывести на экран. */
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
@@ -246,7 +234,6 @@ public class hard_5 {
             headerRow.createCell(0).setCellValue("ID");
             headerRow.createCell(1).setCellValue("String");
             headerRow.createCell(2).setCellValue("Reversed String");
-            headerRow.createCell(3).setCellValue("Concatenated String");
 
             // Заполнение данных
             int rowNum = 1;
@@ -259,21 +246,17 @@ public class hard_5 {
                 String originalString = resultSet.getString("string");
                 String reversedString = new StringBuilder(originalString).reverse().toString();
                 row.createCell(2).setCellValue(reversedString);
-
-                // Объединение перевернутой строки
-                String concatenatedString = originalString + reversedString;
-                row.createCell(3).setCellValue(concatenatedString);
             }
 
             // Автоматическое выравнивание по ширине колонки
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 3; i++) {
                 sheet.autoSizeColumn(i);
             }
 
             // Сохранение в файл
-            try (FileOutputStream outputStream = new FileOutputStream("InteractiveMenu.xlsx")) {
+            try (FileOutputStream outputStream = new FileOutputStream("hard_5.xlsx")) {
                 workbook.write(outputStream);
-                System.out.println("Данные успешно сохранены в файл 'InteractiveMenu.xlsx'.");
+                System.out.println("Данные успешно сохранены в файл 'hard_5.xlsx'.");
             } catch (IOException e) {
                 System.out.println("Ошибка при сохранении данных в файл: " + e.getMessage());
             }
@@ -302,3 +285,4 @@ public class hard_5 {
         }
     }
 }
+
