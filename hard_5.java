@@ -134,6 +134,7 @@ public class hard_5 {
         }
     }
 
+
     private static void createTable(Scanner scanner, Connection connection) {
         System.out.println("Введите название таблицы: ");
         tableName = scanner.nextLine();
@@ -149,6 +150,7 @@ public class hard_5 {
             System.out.println("Ошибка при создании таблицы: " + e.getMessage());
         }
     }
+
 
     private static void reverseStringsAndSave(Scanner scanner, Connection connection) {
         // Проверяем, что таблица была создана
@@ -180,6 +182,7 @@ public class hard_5 {
         saveToDatabase(reversedFirstString.toString(), reversedSecondString.toString(), connection);
     }
 
+
     private static void concatenateStringsAndSave(Connection connection) {
         // Проверяем, что таблица была создана
         if (tableName.isEmpty()) {
@@ -197,11 +200,18 @@ public class hard_5 {
             return;
         }
 
-        // Объединяем строки
-        String concatenatedString = firstString + secondString;
+        // Определяем позицию разделителя
+        int middleIndex = firstString.length() / 2;
+        if (firstString.length() % 2 != 0) {
+            middleIndex++; // Для нечетной длины строки сдвигаем на один символ вправо
+        }
+
+        // Вставляем вторую строку между двумя половинами первой строки
+        StringBuilder concatenatedString = new StringBuilder(firstString);
+        concatenatedString.insert(middleIndex, secondString);
 
         // Сохраняем объединенную строку в базу данных
-        saveConcatenatedStringToDatabase(concatenatedString, connection);
+        saveConcatenatedStringToDatabase(concatenatedString.toString(), connection);
     }
 
 
@@ -219,6 +229,7 @@ public class hard_5 {
         return "";
     }
 
+
     private static String getSecondStringFromDatabase(Connection connection) {
         // Получаем вторую строку из базы данных
         String query = "SELECT string FROM " + tableName + " WHERE id = 2";
@@ -232,6 +243,7 @@ public class hard_5 {
         }
         return "";
     }
+
 
     private static void saveToDatabase(String reversedFirstString, String reversedSecondString, Connection connection) {
         String insertQuery = "INSERT INTO " + tableName + " (string) VALUES (?)";
@@ -248,6 +260,7 @@ public class hard_5 {
         }
     }
 
+
     private static void saveConcatenatedStringToDatabase(String concatenatedString, Connection connection) {
         String insertQuery = "INSERT INTO " + tableName + " (string) VALUES (?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
@@ -260,6 +273,7 @@ public class hard_5 {
             System.out.println("Ошибка при вставке данных в таблицу: " + e.getMessage());
         }
     }
+
 
     private static void saveDataToExcelAndDisplay(Connection connection) {
         String query = "SELECT * FROM " + tableName;
@@ -324,4 +338,3 @@ public class hard_5 {
         }
     }
 }
-
