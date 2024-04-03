@@ -1,3 +1,15 @@
+/* Строковый тип данных (класс StringBuffer).
+Ввести две строки (не менее 50 символов каждая) с клавиатуры.
+Необходимо вывести на экран две введенных ранее строки,
+изменить порядок символов на обратный и добавить одну строку в другую.
+
+Реализовать программу с интерактивным консольным меню:
+1. Вывести все таблицы из MySQL.
+2. Создать таблицу в MySQL.
+3. Изменить порядок символов строки на обратный, результат сохранить в MySQL с последующим выводом в консоль.
+4. Добавить одну строку в другую, результат сохранить в MySQL с последующим выводом в консоль.
+5. Сохранить все данные (вышеполученные результаты) из MySQL в Excel и вывести на экран. */
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
@@ -122,6 +134,7 @@ public class hard_5 {
         }
     }
 
+
     private static void createTable(Scanner scanner, Connection connection) {
         System.out.println("Введите название таблицы: ");
         tableName = scanner.nextLine();
@@ -138,13 +151,28 @@ public class hard_5 {
         }
     }
 
+
     private static void reverseStringsAndSave(Scanner scanner, Connection connection) {
-        System.out.println("Введите первую строку: ");
+        // Проверяем, что таблица была создана
+        if (tableName.isEmpty()) {
+            System.out.println("Ошибка: таблица не была создана. Сначала создайте таблицу.");
+            return;
+        }
+
+        System.out.println("Введите первую строку (не менее 50 символов): ");
         String firstString = scanner.nextLine();
+        if (firstString.length() < 50) {
+            System.out.println("Ошибка: введенная строка слишком короткая.");
+            return;
+        }
         StringBuffer reversedFirstString = new StringBuffer(firstString).reverse();
 
-        System.out.println("Введите вторую строку: ");
+        System.out.println("Введите вторую строку (не менее 50 символов): ");
         String secondString = scanner.nextLine();
+        if (secondString.length() < 50) {
+            System.out.println("Ошибка: введенная строка слишком короткая.");
+            return;
+        }
         StringBuffer reversedSecondString = new StringBuffer(secondString).reverse();
 
         System.out.println("Перевернутая первая строка: " + reversedFirstString);
@@ -154,17 +182,38 @@ public class hard_5 {
         saveToDatabase(reversedFirstString.toString(), reversedSecondString.toString(), connection);
     }
 
+
     private static void concatenateStringsAndSave(Connection connection) {
+        // Проверяем, что таблица была создана
+        if (tableName.isEmpty()) {
+            System.out.println("Ошибка: таблица не была создана. Сначала создайте таблицу.");
+            return;
+        }
+
         // Получаем строки из базы данных
         String firstString = getFirstStringFromDatabase(connection);
         String secondString = getSecondStringFromDatabase(connection);
 
-        // Объединяем строки
-        String concatenatedString = firstString + secondString;
+        // Проверяем, что строки были получены из базы данных
+        if (firstString.isEmpty() || secondString.isEmpty()) {
+            System.out.println("Ошибка: строки не были получены из базы данных.");
+            return;
+        }
+
+        // Определяем позицию разделителя
+        int middleIndex = firstString.length() / 2;
+        if (firstString.length() % 2 != 0) {
+            middleIndex++; // Для нечетной длины строки сдвигаем на один символ вправо
+        }
+
+        // Вставляем вторую строку между двумя половинами первой строки
+        StringBuilder concatenatedString = new StringBuilder(firstString);
+        concatenatedString.insert(middleIndex, secondString);
 
         // Сохраняем объединенную строку в базу данных
-        saveConcatenatedStringToDatabase(concatenatedString, connection);
+        saveConcatenatedStringToDatabase(concatenatedString.toString(), connection);
     }
+
 
     private static String getFirstStringFromDatabase(Connection connection) {
         // Получаем первую строку из базы данных
@@ -180,6 +229,7 @@ public class hard_5 {
         return "";
     }
 
+
     private static String getSecondStringFromDatabase(Connection connection) {
         // Получаем вторую строку из базы данных
         String query = "SELECT string FROM " + tableName + " WHERE id = 2";
@@ -193,6 +243,7 @@ public class hard_5 {
         }
         return "";
     }
+
 
     private static void saveToDatabase(String reversedFirstString, String reversedSecondString, Connection connection) {
         String insertQuery = "INSERT INTO " + tableName + " (string) VALUES (?)";
@@ -209,6 +260,7 @@ public class hard_5 {
         }
     }
 
+
     private static void saveConcatenatedStringToDatabase(String concatenatedString, Connection connection) {
         String insertQuery = "INSERT INTO " + tableName + " (string) VALUES (?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
@@ -221,6 +273,7 @@ public class hard_5 {
             System.out.println("Ошибка при вставке данных в таблицу: " + e.getMessage());
         }
     }
+
 
     private static void saveDataToExcelAndDisplay(Connection connection) {
         String query = "SELECT * FROM " + tableName;
@@ -285,4 +338,3 @@ public class hard_5 {
         }
     }
 }
-
