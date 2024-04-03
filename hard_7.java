@@ -120,13 +120,13 @@ public class hard_7 {
 
                 case 3:
                     int[] array = new int[35];
-                    System.out.println("Введите 35 элементов массива:");
+                    System.out.println("Введите 35 элементов массива через пробел:");
 
+                    String[] input = scanner.nextLine().split(" ");
                     for (int i = 0; i < array.length; i++) {
-                        array[i] = scanner.nextInt();
+                        array[i] = Integer.parseInt(input[i]);
                     }
 
-                    // Сохранение массива в базу данных
                     try {
                         String query = "INSERT INTO " + tableName + " (array_column) VALUES (?)";
                         PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -185,7 +185,7 @@ public class hard_7 {
                 String arrayString = resultSet.getString("array_column");
                 int[] array = Arrays.stream(arrayString.split(",")).mapToInt(Integer::parseInt).toArray();
 
-                Sort sorter = new Sort(array);
+                ArrayPI sorter = new ArrayPI(array);
                 sorter.bubbleSortAscending();
                 System.out.println("Отсортированный массив по возрастанию:");
                 for (int value : sorter.array) {
@@ -246,12 +246,6 @@ class ArrayPI {
 
     public ArrayPI(int[] array) {
         this.array = array;
-    }
-}
-
-final class Sort extends ArrayPI {
-    public Sort(int[] array) {
-        super(array);
     }
 
     public void bubbleSortAscending() {
