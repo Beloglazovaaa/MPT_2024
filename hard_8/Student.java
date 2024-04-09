@@ -1,6 +1,6 @@
 package hard_8;
 
-public class Student {
+abstract class Student {
     private String name;
     private int age;
 

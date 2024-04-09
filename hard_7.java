@@ -12,6 +12,8 @@
 4. Отсортировать массив и сохранить в MySQL с последующим выводом в консоль.
 5. Сохранить результаты из MySQL в Excel и вывести их в консоль. */
 
+// 37 93 32 94 8 36 73 60 78 96 95 56 29 24 24 39 66 83 40 6 68 94 40 10 67 24 10 81 99 32 41 51 49 39 56
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -19,14 +21,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
-
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
-
 import java.io.FileOutputStream;
-
 import java.util.*;
 import java.util.stream.*;
 
@@ -120,12 +119,25 @@ public class hard_7 {
 
                 case 3:
                     int[] array = new int[35];
-                    System.out.println("Введите 35 элементов массива через пробел:");
+                    boolean validInput = false;
+                    do {
+                        System.out.println("Введите 35 чисел массива через пробел:");
+                        String input = scanner.nextLine();
+                        String[] inputArray = input.split("\\s+");
 
-                    String[] input = scanner.nextLine().split(" ");
-                    for (int i = 0; i < array.length; i++) {
-                        array[i] = Integer.parseInt(input[i]);
-                    }
+                        if (inputArray.length == 35) {
+                            try {
+                                for (int i = 0; i < array.length; i++) {
+                                    array[i] = Integer.parseInt(inputArray[i]);
+                                }
+                                validInput = true;
+                            } catch (NumberFormatException e) {
+                                System.out.println("Ошибка: Некорректный ввод. Пожалуйста, введите только числа.");
+                            }
+                        } else {
+                            System.out.println("Ошибка: Необходимо ввести ровно 35 чисел.");
+                        }
+                    } while (!validInput);
 
                     try {
                         String query = "INSERT INTO " + tableName + " (array_column) VALUES (?)";
@@ -136,7 +148,7 @@ public class hard_7 {
                         for (int i = 0; i < array.length; i++) {
                             arrayString.append(array[i]);
                             if (i < array.length - 1) {
-                                arrayString.append(",");
+                                arrayString.append(" ");
                             }
                         }
 
@@ -178,28 +190,29 @@ public class hard_7 {
         try {
             // Получение последнего сохраненного массива из базы данных
             Statement statement = connection.createStatement();
-            System.out.println(tableName);
             ResultSet resultSet = statement.executeQuery("SELECT array_column FROM " + tableName + " ORDER BY id DESC LIMIT 1");
 
             if (resultSet.next()) {
                 String arrayString = resultSet.getString("array_column");
-                int[] array = Arrays.stream(arrayString.split(",")).mapToInt(Integer::parseInt).toArray();
+                int[] array = Arrays.stream(arrayString.split("\\s+")).mapToInt(Integer::parseInt).toArray();
 
+                // Создание экземпляра ArrayPI и сортировка массива
                 ArrayPI sorter = new ArrayPI(array);
                 sorter.bubbleSortAscending();
+
+                // Остальной код оставить без изменений
                 System.out.println("Отсортированный массив по возрастанию:");
                 for (int value : sorter.array) {
                     System.out.print(value + " ");
                 }
                 System.out.println();
 
-                // Сохранение отсортированного массива в базу данных
-                String sortedArrayString = Arrays.stream(sorter.array).mapToObj(String::valueOf).collect(Collectors.joining(","));
+                String sortedArrayString = Arrays.stream(sorter.array).mapToObj(String::valueOf).collect(Collectors.joining(" "));
                 String query = "INSERT INTO " + tableName + " (array_column) VALUES (?)";
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setString(1, sortedArrayString);
                 preparedStatement.executeUpdate();
-                System.out.println("Отсортированный массив сохранен в базу данных.");
+                System.out.println("Отсортированный массив сохранен в базе данных.");
 
             } else {
                 System.out.println("В базе данных нет массивов для сортировки.");
@@ -210,23 +223,39 @@ public class hard_7 {
         }
     }
 
+
     private static void saveToExcel(Connection connection, String tableName) {
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Results");
 
+            // Создаем строку с заголовком для введенного массива
+            Row headerRowInput = sheet.createRow(0);
+            headerRowInput.createCell(0).setCellValue("Введенный массив");
+            headerRowInput.createCell(1).setCellValue("Отсортированный массив");
+
+            // Выводим сами массивы
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName);
 
-            int rowNum = 0;
-            while (resultSet.next()) {
+            if (resultSet.next()) {
                 String arrayString = resultSet.getString("array_column");
-                String[] arrayValues = arrayString.split(",");
-                Row row = sheet.createRow(rowNum++);
-                for (int i = 0; i < arrayValues.length; i++) {
-                    Cell cell = row.createCell(i);
-                    cell.setCellValue(arrayValues[i]);
-                    sheet.autoSizeColumn(i);  // Адаптивная ширина колонки
-                }
+                String[] arrayValues = arrayString.split("\\s+");
+
+                Row dataRow = sheet.createRow(2);
+                Cell inputCell = dataRow.createCell(0);
+                inputCell.setCellValue(arrayString);
+
+                ArrayPI sorter = new ArrayPI(Arrays.stream(arrayValues).mapToInt(Integer::parseInt).toArray());
+                sorter.bubbleSortAscending();
+                String sortedArrayString = Arrays.stream(sorter.array).mapToObj(String::valueOf).collect(Collectors.joining(" "));
+
+                Cell sortedCell = dataRow.createCell(1);
+                sortedCell.setCellValue(sortedArrayString);
+            }
+
+            // Автоматическое регулирование ширины ячеек
+            for (int i = 0; i < 2; i++) {
+                sheet.autoSizeColumn(i);
             }
 
             try (FileOutputStream outputStream = new FileOutputStream("hard_7.xlsx")) {
@@ -239,22 +268,24 @@ public class hard_7 {
             e.printStackTrace();
         }
     }
-}
 
-class ArrayPI {
-    protected int[] array;
 
-    public ArrayPI(int[] array) {
-        this.array = array;
-    }
+    // ArrayPI как вложенный статический класс
+    static class ArrayPI {
+        protected int[] array;
 
-    public void bubbleSortAscending() {
-        for (int i = 0; i < array.length - 1; i++) {
-            for (int j = 0; j < array.length - i - 1; j++) {
-                if (array[j] > array[j + 1]) {
-                    int temp = array[j];
-                    array[j] = array[j + 1];
-                    array[j + 1] = temp;
+        public ArrayPI(int[] array) {
+            this.array = array;
+        }
+
+        public void bubbleSortAscending() {
+            for (int i = 0; i < array.length - 1; i++) {
+                for (int j = 0; j < array.length - i - 1; j++) {
+                    if (array[j] > array[j + 1]) {
+                        int temp = array[j];
+                        array[j] = array[j + 1];
+                        array[j + 1] = temp;
+                    }
                 }
             }
         }
