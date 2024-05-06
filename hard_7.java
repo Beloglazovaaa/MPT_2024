@@ -90,7 +90,7 @@ public class hard_7 {
                     try {
                         Statement statement = connection.createStatement();
                         ResultSet resultSet = statement.executeQuery("SHOW TABLES");
-                        System.out.println("Таблицы в базе данных:");
+                        System.out.println("Таблицы в базе данных: ");
                         while (resultSet.next()) {
                             tableName = resultSet.getString(1);
                             System.out.println(tableName);
