@@ -1,13 +1,18 @@
 package task_9;
 
-public final class MatrixMultiplier extends Array_PI9 {
-    public MatrixMultiplier(int[][] firstMatrix, int[][] secondMatrix, String tableName, Connection connection) {
-        super();
-        saveMatrixToDatabase(firstMatrix, "matrix1", connection);
-        saveMatrixToDatabase(secondMatrix, "matrix2", connection);
+public final class MatrixMultiplier {
+    private final int[][] firstMatrix;
+    private final int[][] secondMatrix;
+
+    public MatrixMultiplier(int[][] firstMatrix, int[][] secondMatrix) {
+        this.firstMatrix = firstMatrix;
+        this.secondMatrix = secondMatrix;
+    }
+
+    public void multiplyAndPrintResult() {
         int[][] resultMatrix = multiplyMatrices(firstMatrix, secondMatrix);
+        System.out.println("Результат умножения матриц:");
         printMatrix(resultMatrix);
-        saveDataToExcel(tableName, firstMatrix, secondMatrix, resultMatrix);
     }
 
     public static int[][] multiplyMatrices(int[][] firstMatrix, int[][] secondMatrix) {

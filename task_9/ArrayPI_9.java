@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
-public class Array_PI9 {
+public class ArrayPI_9 {
     public static int[][] readMatrixFromInput(Scanner scanner, int rows, int columns) {
         int[][] matrix = new int[rows][columns];
         System.out.println("Введите элементы матрицы (через пробел каждое число в строке):");
@@ -45,9 +45,10 @@ public class Array_PI9 {
         }
     }
 
-    public static void saveDataToExcel(String tableName, int[][] firstMatrix, int[][] secondMatrix, int[][] resultMatrix, int[][] sumMatrix, int[][] diffMatrix, int[][] powerMatrix) {
+    public static void saveDataToExcel(String tableName, int[][] firstMatrix, int[][] secondMatrix, int[][] resultMatrix,
+                                       String operation) {
         try (Workbook workbook = new XSSFWorkbook();
-             FileOutputStream outputStream = new FileOutputStream("hard_6.xlsx")) {
+             FileOutputStream outputStream = new FileOutputStream("hard_9.xlsx")) {
             Sheet sheet = workbook.createSheet("Data");
 
             // Header for first matrix
@@ -88,15 +89,15 @@ public class Array_PI9 {
             // Empty row after second matrix
             sheet.createRow(firstMatrix.length + secondMatrix.length + 5);
 
-            // Header for multiplied matrix
+            // Header for operation
             Row row3 = sheet.createRow(firstMatrix.length + secondMatrix.length + 6);
             Cell cell3 = row3.createCell(0);
-            cell3.setCellValue("Перемноженная матрица");
+            cell3.setCellValue("Результат операции: " + operation);
 
-            // Empty row after header of multiplied matrix
+            // Empty row after header of operation
             sheet.createRow(firstMatrix.length + secondMatrix.length + 7);
 
-            // Add multiplied matrix
+            // Add result matrix
             for (int i = 0; i < resultMatrix.length; i++) {
                 Row dataRow = sheet.createRow(firstMatrix.length + secondMatrix.length + 8 + i);
                 for (int j = 0; j < resultMatrix[i].length; j++) {
@@ -104,59 +105,10 @@ public class Array_PI9 {
                 }
             }
 
-            // Header for added matrix
-            Row row4 = sheet.createRow(firstMatrix.length + secondMatrix.length + resultMatrix.length + 9);
-            Cell cell4 = row4.createCell(0);
-            cell4.setCellValue("Сложенная матрица");
-
-            // Empty row after header of added matrix
-            sheet.createRow(firstMatrix.length + secondMatrix.length + resultMatrix.length + 10);
-
-            // Add added matrix
-            for (int i = 0; i < sumMatrix.length; i++) {
-                Row dataRow = sheet.createRow(firstMatrix.length + secondMatrix.length + resultMatrix.length + 11 + i);
-                for (int j = 0; j < sumMatrix[i].length; j++) {
-                    dataRow.createCell(j).setCellValue(sumMatrix[i][j]);
-                }
-            }
-
-            // Header for subtracted matrix
-            Row row5 = sheet.createRow(firstMatrix.length + secondMatrix.length + resultMatrix.length + sumMatrix.length + 12);
-            Cell cell5 = row5.createCell(0);
-            cell5.setCellValue("Вычитанная матрица");
-
-            // Empty row after header of subtracted matrix
-            sheet.createRow(firstMatrix.length + secondMatrix.length + resultMatrix.length + sumMatrix.length + 13);
-
-            // Add subtracted matrix
-            for (int i = 0; i < diffMatrix.length; i++) {
-                Row dataRow = sheet.createRow(firstMatrix.length + secondMatrix.length + resultMatrix.length + sumMatrix.length + 14 + i);
-                for (int j = 0; j < diffMatrix[i].length; j++) {
-                    dataRow.createCell(j).setCellValue(diffMatrix[i][j]);
-                }
-            }
-
-            // Header for powered matrix
-            Row row6 = sheet.createRow(firstMatrix.length + secondMatrix.length + resultMatrix.length + sumMatrix.length + diffMatrix.length + 15);
-            Cell cell6 = row6.createCell(0);
-            cell6.setCellValue("Возведенная в степень матрица");
-
-            // Empty row after header of powered matrix
-            sheet.createRow(firstMatrix.length + secondMatrix.length + resultMatrix.length + sumMatrix.length + diffMatrix.length + 16);
-
-            // Add powered matrix
-            for (int i = 0; i < powerMatrix.length; i++) {
-                Row dataRow = sheet.createRow(firstMatrix.length + secondMatrix.length + resultMatrix.length + sumMatrix.length + diffMatrix.length + 17 + i);
-                for (int j = 0; j < powerMatrix[i].length; j++) {
-                    dataRow.createCell(j).setCellValue(powerMatrix[i][j]);
-                }
-            }
-
             workbook.write(outputStream);
-            System.out.println("Данные успешно сохранены в файл hard_6.xlsx");
+            System.out.println("Данные успешно сохранены в файл hard_9.xlsx");
         } catch (IOException e) {
             System.out.println("Ошибка при сохранении данных в Excel: " + e.getMessage());
         }
     }
 }
-
