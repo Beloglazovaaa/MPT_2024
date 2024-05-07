@@ -82,11 +82,6 @@ public class hard_6 {
                         System.out.println("Введите значения для второй матрицы (размер 7x7):");
                         secondMatrix = ArrayPI_6.readMatrixFromInput(scanner, 7, 7);
 
-                        resultMatrix = MatrixMultiplier.multiplyMatrices(firstMatrix, secondMatrix);
-
-                        System.out.println("Результат умножения матриц:");
-                        MatrixMultiplier.printMatrix(resultMatrix);
-                        ArrayPI_6.saveMatrixToDatabase(connection, resultMatrix, tableName);
                         break;
 
                     case 4:

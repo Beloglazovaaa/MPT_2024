@@ -9,6 +9,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
@@ -109,6 +111,41 @@ public class ArrayPI_9 {
             System.out.println("Данные успешно сохранены в файл hard_9.xlsx");
         } catch (IOException e) {
             System.out.println("Ошибка при сохранении данных в Excel: " + e.getMessage());
+        }
+    }
+
+    public static void exportTableToExcel(Connection connection, String tableName) {
+        try (Workbook workbook = new XSSFWorkbook();
+             FileOutputStream outputStream = new FileOutputStream("export_" + tableName + ".xlsx")) {
+
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName);
+
+            Sheet sheet = workbook.createSheet("Data");
+
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < columnCount; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(metaData.getColumnName(i + 1));
+            }
+
+            int rowNumber = 1;
+            while (resultSet.next()) {
+                Row row = sheet.createRow(rowNumber++);
+                for (int i = 0; i < columnCount; i++) {
+                    Cell cell = row.createCell(i);
+                    cell.setCellValue(resultSet.getString(i + 1));
+                }
+            }
+
+            workbook.write(outputStream);
+            System.out.println("Данные из таблицы " + tableName + " успешно экспортированы в Excel.");
+
+        } catch (SQLException | IOException e) {
+            System.out.println("Ошибка при экспорте данных в Excel: " + e.getMessage());
         }
     }
 }

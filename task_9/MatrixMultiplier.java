@@ -15,6 +15,10 @@ public final class MatrixMultiplier {
         printMatrix(resultMatrix);
     }
 
+    public int[][] getResultMatrix() {
+        return multiplyMatrices(firstMatrix, secondMatrix);
+    }
+
     public static int[][] multiplyMatrices(int[][] firstMatrix, int[][] secondMatrix) {
         int rows1 = firstMatrix.length;
         int columns1 = firstMatrix[0].length;

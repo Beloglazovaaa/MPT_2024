@@ -3,6 +3,7 @@ package task_9;
 import java.sql.*;
 import java.util.Scanner;
 
+
 public class hard_9 {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -14,12 +15,11 @@ public class hard_9 {
         String username = "root";
         String password = "root";
 
-        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+        try (Connection connection = DriverManager.getConnection(url + dbName, username, password)) {
             System.out.println("Подключение к базе данных успешно!");
 
             int[][] firstMatrix = null;
             int[][] secondMatrix = null;
-            int[][] resultMatrix = null;
 
             while (running) {
                 System.out.println("1. Вывести все таблицы из MySQL.");
@@ -27,6 +27,7 @@ public class hard_9 {
                 System.out.println("3. Ввести две матрицы с клавиатуры и каждую из них сохранить в MySQL с последующим выводом в консоль.");
                 System.out.println("4. Перемножить, сложить, вычесть, возвести в степень матрицы, а также сохранить результаты в MySQL\n" +
                         "и вывести в консоль.");
+                System.out.println("5. Сохранить результаты из MySQL в Excel и вывести их в консоль.");
                 System.out.println("0. Выйти из программы.");
                 System.out.println("Выберите действие: ");
                 int choice = scanner.nextInt();
@@ -65,72 +66,68 @@ public class hard_9 {
                     case 3:
                         System.out.println("Введите значения для первой матрицы (размер 7x7):");
                         firstMatrix = ArrayPI_9.readMatrixFromInput(scanner, 7, 7);
+                        System.out.println("Первая матрица:");
+                        MatrixMultiplier.printMatrix(firstMatrix);
 
                         System.out.println("Введите значения для второй матрицы (размер 7x7):");
                         secondMatrix = ArrayPI_9.readMatrixFromInput(scanner, 7, 7);
+                        System.out.println("Вторая матрица:");
+                        MatrixMultiplier.printMatrix(secondMatrix);
 
-                        System.out.println("Результат умножения матриц:");
-                        resultMatrix = MatrixMultiplier.multiplyMatrices(firstMatrix, secondMatrix);
-                        MatrixMultiplier.printMatrix(resultMatrix);
+                        // Сохранение результатов в базу данных
+                        ArrayPI_9.saveMatrixToDatabase(connection, firstMatrix, tableName + "_1");
+                        ArrayPI_9.saveMatrixToDatabase(connection, secondMatrix, tableName + "_2");
 
-                        System.out.println("Результат сложения матриц:");
-                        MatrixAdder adder = new MatrixAdder(firstMatrix, secondMatrix);
-                        adder.addAndPrintResult();
-
-                        System.out.println("Результат вычитания матриц:");
-                        MatrixSubtractor subtractor = new MatrixSubtractor(firstMatrix, secondMatrix);
-                        subtractor.subtractAndPrintResult();
-
-                        System.out.println("Введите степень для возведения матрицы:");
-                        int power = scanner.nextInt();
-                        scanner.nextLine();
-                        System.out.println("Результат возведения матрицы в степень:");
-                        MatrixPower powerer = new MatrixPower(firstMatrix, power);
-                        powerer.powerAndPrintResult();
-
-                        ArrayPI_9.saveMatrixToDatabase(connection, resultMatrix, tableName);
                         break;
 
                     case 4:
                         if (firstMatrix != null && secondMatrix != null) {
-                            System.out.println("Выберите операцию:");
-                            System.out.println("1. Сложение матриц");
-                            System.out.println("2. Вычитание матриц");
-                            System.out.println("3. Умножение матриц");
-                            System.out.println("4. Возведение матрицы в степень");
-                            int operationChoice = scanner.nextInt();
+                            // Сложение матриц
+                            MatrixAdder adder = new MatrixAdder(firstMatrix, secondMatrix);
+                            int[][] sumMatrix = adder.getResultMatrix();
+                            adder.addAndPrintResult();
+                            ArrayPI_9.saveMatrixToDatabase(connection, sumMatrix, tableName + "_addition");
+
+                            // Вычитание матриц
+                            MatrixSubtractor subtractor = new MatrixSubtractor(firstMatrix, secondMatrix);
+                            int[][] differenceMatrix = subtractor.getResultMatrix();
+                            subtractor.subtractAndPrintResult();
+                            ArrayPI_9.saveMatrixToDatabase(connection, differenceMatrix, tableName + "_subtraction");
+
+                            // Умножение матриц
+                            MatrixMultiplier multiplier = new MatrixMultiplier(firstMatrix, secondMatrix);
+                            int[][] productMatrix = multiplier.getResultMatrix();
+                            multiplier.multiplyAndPrintResult();
+                            ArrayPI_9.saveMatrixToDatabase(connection, productMatrix, tableName + "_multiplication");
+
+                            // Возведение матриц в степень
+                            System.out.println("Введите степень для возведения матриц в эту степень:");
+                            int power = scanner.nextInt();
                             scanner.nextLine();
 
-                            switch (operationChoice) {
-                                case 1:
-                                    System.out.println("Результат сложения матриц:");
-                                    MatrixAdder adderCase4 = new MatrixAdder(firstMatrix, secondMatrix);
-                                    adderCase4.addAndPrintResult();
-                                    break;
-                                case 2:
-                                    System.out.println("Результат вычитания матриц:");
-                                    MatrixSubtractor subtractorCase4 = new MatrixSubtractor(firstMatrix, secondMatrix);
-                                    subtractorCase4.subtractAndPrintResult();
-                                    break;
-                                case 3:
-                                    System.out.println("Результат умножения матриц:");
-                                    MatrixMultiplier MultiplyCase4 = new MatrixMultiplier (firstMatrix, secondMatrix);
-                                    MultiplyCase4.multiplyAndPrintResult();
-                                case 4:
-                                    System.out.println("Введите степень для возведения матрицы:");
-                                    int powerCase4 = scanner.nextInt();
-                                    scanner.nextLine();
-                                    System.out.println("Результат возведения матрицы в степень:");
-                                    MatrixPower powererCase4 = new MatrixPower(firstMatrix, powerCase4);
-                                    powererCase4.powerAndPrintResult();
-                                    break;
-                                default:
-                                    System.out.println("Некорректный выбор операции.");
-                            }
+                            MatrixPower powerer = new MatrixPower(firstMatrix, secondMatrix, power);
+                            powerer.powerAndPrintResult();
+
+                            // Сохранение результатов возведения в степень в базу данных
+                            ArrayPI_9.saveMatrixToDatabase(connection, powerer.getResultMatrix1(), tableName + "_power1");
+                            ArrayPI_9.saveMatrixToDatabase(connection, powerer.getResultMatrix2(), tableName + "_power2");
                         } else {
                             System.out.println("Пожалуйста, сначала введите значения для обеих матриц.");
                         }
                         break;
+
+                    case 5:
+                        System.out.println("Введите название таблицы для экспорта в Excel:");
+                        String exportTableName = scanner.nextLine();
+
+                        try {
+                            Connection connection1= DriverManager.getConnection(url, username, password);
+                            ArrayPI_9.exportTableToExcel(connection, exportTableName);
+                        } catch (SQLException e) {
+                            System.out.println("Ошибка при подключении к базе данных: " + e.getMessage());
+                        }
+                        break;
+
 
                     case 0:
                         running = false;

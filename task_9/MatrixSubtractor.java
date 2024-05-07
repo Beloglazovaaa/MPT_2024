@@ -15,6 +15,10 @@ public final class MatrixSubtractor {
         MatrixMultiplier.printMatrix(resultMatrix);
     }
 
+    public int[][] getResultMatrix() {
+        return subtractMatrices(firstMatrix, secondMatrix);
+    }
+    
     public static int[][] subtractMatrices(int[][] firstMatrix, int[][] secondMatrix) {
         int rows = firstMatrix.length;
         int columns = firstMatrix[0].length;

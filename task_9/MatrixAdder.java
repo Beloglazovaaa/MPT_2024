@@ -15,6 +15,10 @@ public final class MatrixAdder {
         MatrixMultiplier.printMatrix(resultMatrix);
     }
 
+    public int[][] getResultMatrix() {
+        return addMatrices(firstMatrix, secondMatrix);
+    }
+
     public static int[][] addMatrices(int[][] firstMatrix, int[][] secondMatrix) {
         int rows = firstMatrix.length;
         int columns = firstMatrix[0].length;
