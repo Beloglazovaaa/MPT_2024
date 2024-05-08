@@ -1,6 +1,12 @@
 import java.sql.*;
 import java.util.Scanner;
 
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class hard_11 {
     private static String tableName = "";
 
@@ -64,8 +70,17 @@ public class hard_11 {
                     createTable(scanner, connection);
                     break;
                 case 3:
-                    firstTask(scanner, connection);
-                    secondTask(scanner, connection);
+                    thirdTask(scanner, connection);
+                    break;
+                case 4:
+                    fourthTask(scanner, connection);
+                    break;
+                case 5:
+                    fifthTask(scanner, connection);
+                    break;
+                case 0:
+                    running = false;
+                    System.out.println("Программа завершена.");
                     break;
             }
         }
@@ -90,7 +105,7 @@ public class hard_11 {
         tableName = scanner.nextLine();
 
         String createTableQuery = "CREATE TABLE IF NOT EXISTS " + tableName +
-                "(id INT AUTO_INCREMENT PRIMARY KEY, triangle_type VARCHAR(20), number INT, even_factorial BIGINT, odd_factorial BIGINT, perimeter DOUBLE, area DOUBLE)";
+                "(id INT AUTO_INCREMENT PRIMARY KEY, number INT, even_factorial BIGINT, odd_factorial BIGINT, perimeter DOUBLE, area DOUBLE,rightPerimeter DOUBLE, rightArea DOUBLE)";
 
         try {
             Statement statement = connection.createStatement();
@@ -101,7 +116,7 @@ public class hard_11 {
         }
     }
 
-    private static void firstTask(Scanner scanner, Connection connection) {
+    private static void thirdTask(Scanner scanner, Connection connection) {
         System.out.println("Введите длину первой стороны треугольника:");
         double side1 = scanner.nextDouble();
         System.out.println("Введите длину второй стороны треугольника:");
@@ -122,46 +137,97 @@ public class hard_11 {
         RightTriangle rightTriangle = new RightTriangle(side1, side2);
 
         // Вывод периметра и площади прямоугольного треугольника
-        double rightPerimeter = triangle.calculatePerimeter();
-        double rightArea = triangle.calculateArea();
-        System.out.println("Периметр прямоугольного треугольника: " + rightTriangle.calculatePerimeter());
-        System.out.println("Площадь прямоугольного треугольника: " + rightTriangle.calculateArea());
-        saveTriangleMetrics(connection, "Triangle", perimeter, area);
-        saveTriangleMetrics(connection, "Right Triangle", rightPerimeter, rightArea);
-    }
-
-    private static void secondTask(Scanner scanner, Connection connection) {
+        double rightPerimeter = rightTriangle.calculatePerimeter();
+        double rightArea = rightTriangle.calculateArea();
+        System.out.println("Периметр прямоугольного треугольника: " + rightPerimeter);
+        System.out.println("Площадь прямоугольного треугольника: " + rightArea);
         System.out.println("Введите число для вычисления четных и нечетных факториалов:");
         int number = scanner.nextInt();
-
         FactorialCalculator calculator = new FactorialCalculator();
         Long[] result = calculator.calculateFactorials(number);
-        saveFactorialResults(connection, number, result[0], result[1]);
+//        saveFactorialResults(connection, number, result[0], result[1]);
+        try {
+            String query = "INSERT INTO " + tableName + " (number, even_factorial, odd_factorial, perimeter, area, rightPerimeter, rightArea) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, number);
+            statement.setLong(2, result[0]);
+            statement.setLong(3, result[1]);
+            statement.setDouble(4, perimeter);
+            statement.setDouble(5, area);
+            statement.setDouble(6, rightPerimeter);
+            statement.setDouble(7, rightArea);
+
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+//        String createTableQuery = "CREATE TABLE IF NOT EXISTS " + tableName +
+//                "(id INT AUTO_INCREMENT PRIMARY KEY, number INT, even_factorial BIGINT, odd_factorial BIGINT, perimeter DOUBLE, area DOUBLE,rightPerimeter DOUBLE, rightArea DOUBLE)";
+
     }
 
-    private static void saveTriangleMetrics(Connection connection, String triangleType, double perimeter, double area) {
+    private static void fourthTask(Scanner scanner, Connection connection) {
         try {
-            String query = "INSERT INTO " + tableName + " (triangle_type, perimeter, area) VALUES (?, ?, ?)";
+            String query = "SELECT * FROM " + tableName + " WHERE id = ?";
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, triangleType);
-            statement.setDouble(2, perimeter);
-            statement.setDouble(3, area);
-            statement.executeUpdate();
+            statement.setInt(1, 1); // Set the ID value you want to retrieve
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                int number = resultSet.getInt("number");
+                long evenFactorial = resultSet.getLong("even_factorial");
+                long oddFactorial = resultSet.getLong("odd_factorial");
+                double perimeter = resultSet.getDouble("perimeter");
+                double area = resultSet.getDouble("area");
+
+                System.out.println("ID: " + id);
+                System.out.println("Число: " + number);
+                System.out.println("Чётный факториал: " + evenFactorial);
+                System.out.println("Нечётный факториал: " + oddFactorial);
+                System.out.println("Периметр: " + perimeter);
+                System.out.println("Площадь: " + area);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private static void saveFactorialResults(Connection connection, int number, Long evenFactorial, Long oddFactorial) {
-        // SQL запрос для вставки данных о факториалах
+    private static void fifthTask(Scanner scanner, Connection connection) {
         try {
-            String sql = "INSERT INTO " + tableName + " (number, even_factorial, odd_factorial) VALUES (?, ?, ?)";
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setInt(1, number);
-            statement.setLong(2, evenFactorial);
-            statement.setLong(3, oddFactorial);
-            statement.executeUpdate();
-        } catch (SQLException e) {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName);
+
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Data");
+
+            Row headerRow = sheet.createRow(0);
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            for (int i = 1; i <= columnCount; i++) {
+                Cell cell = headerRow.createCell(i - 1);
+                cell.setCellValue(metaData.getColumnName(i));
+            }
+
+            int rowNum = 1;
+            while (resultSet.next()) {
+                Row row = sheet.createRow(rowNum++);
+                for (int i = 1; i <= columnCount; i++) {
+                    Cell cell = row.createCell(i - 1);
+                    cell.setCellValue(resultSet.getString(i));
+                }
+            }
+
+            for (int i = 0; i < columnCount; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            try (FileOutputStream fileOut = new FileOutputStream("hard_11.xlsx")) {
+                workbook.write(fileOut);
+                System.out.println("Excel файл был успешно создан!");
+            }
+
+        } catch (SQLException | IOException e) {
             e.printStackTrace();
         }
     }
