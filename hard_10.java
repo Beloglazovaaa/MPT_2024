@@ -108,7 +108,7 @@ public class hard_10 {
                     case 3:
                         System.out.println("Введите название таблицы для ввода данных о студентах:");
                         studentTableName = scanner.nextLine();
-                        inputStudentData(connection, studentTableName, scanner);
+                        Student.inputStudentData(connection, studentTableName, scanner);
                         break;
 
                     case 4:
@@ -235,7 +235,9 @@ public class hard_10 {
             }
         }
     }
+}
 
+class Student {
     public static void inputStudentData(Connection connection, String tableName, Scanner scanner) {
         boolean validInput = false;
         while (!validInput) {
