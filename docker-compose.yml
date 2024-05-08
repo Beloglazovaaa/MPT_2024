@@ -17,4 +17,4 @@ services:
       - PMA_HOST=db
     restart: always
     ports:
-      - 8081:80
+      - 8082:80

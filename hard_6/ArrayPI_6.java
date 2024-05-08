@@ -1,4 +1,4 @@
-package task_6;
+package hard_6;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;

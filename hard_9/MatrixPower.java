@@ -1,4 +1,4 @@
-package task_9;
+package hard_9;
 
 public final class MatrixPower {
     private final int[][] matrix1;
