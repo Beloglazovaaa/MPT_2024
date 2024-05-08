@@ -102,43 +102,35 @@ public class hard_9 {
                             MatrixAdder adder = new MatrixAdder(firstMatrix, secondMatrix);
                             int[][] sumMatrix = adder.getResultMatrix();
                             adder.addAndPrintResult();
-                            ArrayPI_9.saveMatrixToDatabase(connection, sumMatrix, tableName + "_addition");
-
                             // Вычитание матриц
                             MatrixSubtractor subtractor = new MatrixSubtractor(firstMatrix, secondMatrix);
                             int[][] differenceMatrix = subtractor.getResultMatrix();
                             subtractor.subtractAndPrintResult();
-                            ArrayPI_9.saveMatrixToDatabase(connection, differenceMatrix, tableName + "_subtraction");
-
                             // Умножение матриц
                             MatrixMultiplier multiplier = new MatrixMultiplier(firstMatrix, secondMatrix);
                             int[][] productMatrix = multiplier.getResultMatrix();
                             multiplier.multiplyAndPrintResult();
-                            ArrayPI_9.saveMatrixToDatabase(connection, productMatrix, tableName + "_multiplication");
-
                             // Возведение матриц в степень
                             System.out.println("Введите степень для возведения матриц в эту степень:");
                             int power = scanner.nextInt();
                             scanner.nextLine();
-
                             MatrixPower powerer = new MatrixPower(firstMatrix, secondMatrix, power);
                             powerer.powerAndPrintResult();
 
-                            // Сохранение результатов возведения в степень в базу данных
-                            ArrayPI_9.saveMatrixToDatabase(connection, powerer.getResultMatrix1(), tableName + "_power1");
-                            ArrayPI_9.saveMatrixToDatabase(connection, powerer.getResultMatrix2(), tableName + "_power2");
+                            // Сохранение результатов в Excel
+                            ArrayPI_9.saveDataToExcel(tableName, firstMatrix, secondMatrix, sumMatrix, differenceMatrix,
+                                    productMatrix, powerer.getResultMatrix1(), powerer.getResultMatrix2());
                         } else {
                             System.out.println("Пожалуйста, сначала введите значения для обеих матриц.");
                         }
                         break;
 
                     case 5:
-                        System.out.println("Введите название таблицы для экспорта в Excel:");
-                        String exportTableName = scanner.nextLine();
-
+                        System.out.println("Введите название файла для сохранения в Excel:");
+                        String excelFileName = scanner.nextLine();
                         try {
-                            Connection connection1= DriverManager.getConnection(url, username, password);
-                            ArrayPI_9.exportTableToExcel(connection, exportTableName);
+                            Connection connection1 = DriverManager.getConnection(url, username, password);
+                            ArrayPI_9.saveDataToExcel(excelFileName, firstMatrix, secondMatrix, null, null, null, null, null);
                         } catch (SQLException e) {
                             System.out.println("Ошибка при подключении к базе данных: " + e.getMessage());
                         }
