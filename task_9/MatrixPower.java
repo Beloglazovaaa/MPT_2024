@@ -4,11 +4,15 @@ public final class MatrixPower {
     private final int[][] matrix1;
     private final int[][] matrix2;
     private final int power;
+    private int[][] resultMatrix1;
+    private int[][] resultMatrix2;
 
     public MatrixPower(int[][] matrix1, int[][] matrix2, int power) {
         this.matrix1 = matrix1;
         this.matrix2 = matrix2;
         this.power = power;
+        this.resultMatrix1 = powerMatrix(matrix1, power);
+        this.resultMatrix2 = powerMatrix(matrix2, power);
     }
 
     public void powerAndPrintResult() {

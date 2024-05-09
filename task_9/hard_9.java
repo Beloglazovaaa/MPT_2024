@@ -18,6 +18,8 @@ package task_9;
 
 import java.sql.*;
 import java.util.Scanner;
+import java.sql.SQLException;
+
 
 
 public class hard_9 {
@@ -36,6 +38,11 @@ public class hard_9 {
 
             int[][] firstMatrix = null;
             int[][] secondMatrix = null;
+            int[][] productMatrix = null;
+            int[][] sumMatrix = null;
+            int[][] differenceMatrix = null;
+            int[][] powerMatrix1 = null;
+            int[][] powerMatrix2 = null;
 
             while (running) {
                 System.out.println("1. Вывести все таблицы из MySQL.");
@@ -64,6 +71,7 @@ public class hard_9 {
                         }
                         break;
 
+
                     case 2:
                         System.out.println("Введите название таблицы: ");
                         tableName = scanner.next();
@@ -79,62 +87,73 @@ public class hard_9 {
                         }
                         break;
 
+
                     case 3:
+                        // Ввод и сохранение первой матрицы в базу данных
                         System.out.println("Введите значения для первой матрицы (размер 7x7):");
                         firstMatrix = ArrayPI_9.readMatrixFromInput(scanner, 7, 7);
-                        System.out.println("Первая матрица:");
-                        MatrixMultiplier.printMatrix(firstMatrix);
+                        ArrayPI_9.saveMatrixToDatabase(connection, firstMatrix, tableName);
+                        System.out.println("Первая матрица успешно сохранена в базе данных.");
 
+                        // Ввод и сохранение второй матрицы в базу данных
                         System.out.println("Введите значения для второй матрицы (размер 7x7):");
                         secondMatrix = ArrayPI_9.readMatrixFromInput(scanner, 7, 7);
+                        ArrayPI_9.saveMatrixToDatabase(connection, secondMatrix, tableName);
+                        System.out.println("Вторая матрица успешно сохранена в базе данных.");
+
+                        // Вывод сохраненных матриц в консоль
+                        System.out.println("Первая матрица:");
+                        ArrayPI_9.printMatrix(firstMatrix);
                         System.out.println("Вторая матрица:");
-                        MatrixMultiplier.printMatrix(secondMatrix);
-
-                        // Сохранение результатов в базу данных
-                        ArrayPI_9.saveMatrixToDatabase(connection, firstMatrix, tableName + "_1");
-                        ArrayPI_9.saveMatrixToDatabase(connection, secondMatrix, tableName + "_2");
-
+                        ArrayPI_9.printMatrix(secondMatrix);
                         break;
+
 
                     case 4:
                         if (firstMatrix != null && secondMatrix != null) {
-                            // Сложение матриц
+                            // Выполнение операций над матрицами
                             MatrixAdder adder = new MatrixAdder(firstMatrix, secondMatrix);
-                            int[][] sumMatrix = adder.getResultMatrix();
-                            adder.addAndPrintResult();
-                            // Вычитание матриц
+                            sumMatrix = adder.getResultMatrix();
                             MatrixSubtractor subtractor = new MatrixSubtractor(firstMatrix, secondMatrix);
-                            int[][] differenceMatrix = subtractor.getResultMatrix();
-                            subtractor.subtractAndPrintResult();
-                            // Умножение матриц
+                            differenceMatrix = subtractor.getResultMatrix();
                             MatrixMultiplier multiplier = new MatrixMultiplier(firstMatrix, secondMatrix);
-                            int[][] productMatrix = multiplier.getResultMatrix();
-                            multiplier.multiplyAndPrintResult();
-                            // Возведение матриц в степень
+                            productMatrix = multiplier.getResultMatrix();
                             System.out.println("Введите степень для возведения матриц в эту степень:");
                             int power = scanner.nextInt();
                             scanner.nextLine();
                             MatrixPower powerer = new MatrixPower(firstMatrix, secondMatrix, power);
-                            powerer.powerAndPrintResult();
 
-                            // Сохранение результатов в Excel
-                            ArrayPI_9.saveDataToExcel(tableName, firstMatrix, secondMatrix, sumMatrix, differenceMatrix,
-                                    productMatrix, powerer.getResultMatrix1(), powerer.getResultMatrix2());
+// Сохранение результатов операций в базу данных
+                            ArrayPI_9.saveMatrixToDatabase(connection, sumMatrix, tableName);
+                            ArrayPI_9.saveMatrixToDatabase(connection, differenceMatrix, tableName);
+                            ArrayPI_9.saveMatrixToDatabase(connection, productMatrix, tableName);
+                            ArrayPI_9.saveMatrixToDatabase(connection, powerer.getResultMatrix1(), tableName);
+                            ArrayPI_9.saveMatrixToDatabase(connection, powerer.getResultMatrix2(), tableName);
+
+                            // Вывод результатов в консоль
+                            System.out.println("Сумма матриц:");
+                            ArrayPI_9.printMatrix(sumMatrix);
+                            System.out.println("Разность матриц:");
+                            ArrayPI_9.printMatrix(differenceMatrix);
+                            System.out.println("Произведение матриц:");
+                            ArrayPI_9.printMatrix(productMatrix);
+                            System.out.println("Первая матрица в степени " + power + ":");
+                            ArrayPI_9.printMatrix(powerer.getResultMatrix1());
+                            System.out.println("Вторая матрица в степени " + power + ":");
+                            ArrayPI_9.printMatrix(powerer.getResultMatrix2());
                         } else {
                             System.out.println("Пожалуйста, сначала введите значения для обеих матриц.");
                         }
                         break;
 
+
                     case 5:
-                        System.out.println("Введите название файла для сохранения в Excel:");
-                        String excelFileName = scanner.nextLine();
-                        try {
-                            Connection connection1 = DriverManager.getConnection(url, username, password);
-                            ArrayPI_9.saveDataToExcel(excelFileName, firstMatrix, secondMatrix, null, null, null, null, null);
-                        } catch (SQLException e) {
-                            System.out.println("Ошибка при подключении к базе данных: " + e.getMessage());
-                        }
+                        ArrayPI_9.saveDataToExcel(tableName, firstMatrix, secondMatrix, productMatrix, sumMatrix, differenceMatrix, powerMatrix1, powerMatrix2);
+                        System.out.println("Данные успешно сохранены в файл hard_9.xlsx");
                         break;
+
+
+
 
 
                     case 0:
