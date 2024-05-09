@@ -1,6 +1,6 @@
-package task_6;
+package hard_9;
 
-public class MatrixMultiplier {
+public final class MatrixMultiplier {
     private final int[][] firstMatrix;
     private final int[][] secondMatrix;
 
@@ -13,6 +13,10 @@ public class MatrixMultiplier {
         int[][] resultMatrix = multiplyMatrices(firstMatrix, secondMatrix);
         System.out.println("Результат умножения матриц:");
         printMatrix(resultMatrix);
+    }
+
+    public int[][] getResultMatrix() {
+        return multiplyMatrices(firstMatrix, secondMatrix);
     }
 
     public static int[][] multiplyMatrices(int[][] firstMatrix, int[][] secondMatrix) {
