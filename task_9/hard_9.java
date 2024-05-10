@@ -14,7 +14,7 @@
 4. Перемножить, сложить, вычесть, возвести в степень матрицы, а также сохранить результаты в MySQL c выводом в консоль.
 5. Сохранить результаты из MySQL в Excel и вывести их в консоль. */
 
-package hard_9;
+package task_9;
 
 import java.sql.*;
 import java.util.Scanner;
@@ -129,6 +129,9 @@ public class hard_9 {
                             ArrayPI_9.saveMatrixToDatabase(connection, productMatrix, tableName);
                             ArrayPI_9.saveMatrixToDatabase(connection, powerer.getResultMatrix1(), tableName);
                             ArrayPI_9.saveMatrixToDatabase(connection, powerer.getResultMatrix2(), tableName);
+
+                            powerMatrix1 = powerer.getResultMatrix1();
+                            powerMatrix2 = powerer.getResultMatrix2();
 
                             // Вывод результатов в консоль
                             System.out.println("Сумма матриц:");

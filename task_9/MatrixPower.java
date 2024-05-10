@@ -1,4 +1,4 @@
-package hard_9;
+package task_9;
 
 public final class MatrixPower {
     private final int[][] matrix1;
@@ -15,6 +15,14 @@ public final class MatrixPower {
         this.resultMatrix2 = powerMatrix(matrix2, power);
     }
 
+    public int[][] getResultMatrix1() {
+        return resultMatrix1; // Возвращаем ранее вычисленную матрицу
+    }
+
+    public int[][] getResultMatrix2() {
+        return resultMatrix2; // Возвращаем ранее вычисленную матрицу
+    }
+
     public void powerAndPrintResult() {
         int[][] resultMatrix1 = powerMatrix(matrix1, power);
         int[][] resultMatrix2 = powerMatrix(matrix2, power);
@@ -22,14 +30,6 @@ public final class MatrixPower {
         MatrixMultiplier.printMatrix(resultMatrix1);
         System.out.println("Результат возведения второй матрицы в степень " + power + ":");
         MatrixMultiplier.printMatrix(resultMatrix2);
-    }
-
-    public int[][] getResultMatrix1() {
-        return powerMatrix(matrix1, power);
-    }
-
-    public int[][] getResultMatrix2() {
-        return powerMatrix(matrix2, power);
     }
 
     public static int[][] powerMatrix(int[][] matrix, int power) {

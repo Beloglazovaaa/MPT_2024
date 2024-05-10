@@ -1,4 +1,4 @@
-package hard_9;
+package task_9;
 
 public final class MatrixSubtractor {
     private final int[][] firstMatrix;
