@@ -55,7 +55,6 @@ public class ArrayPI_9 {
                 }
             }
 
-            System.out.println("Результаты успешно сохранены в базе данных.");
         } catch (SQLException e) {
             System.out.println("Ошибка при сохранении результатов в базу данных: " + e.getMessage());
         }
@@ -124,7 +123,6 @@ public class ArrayPI_9 {
 
 
             workbook.write(outputStream);
-            System.out.println("Данные успешно сохранены в файл hard_9.xlsx");
         } catch (IOException e) {
             System.out.println("Ошибка при сохранении данных в Excel: " + e.getMessage());
         }

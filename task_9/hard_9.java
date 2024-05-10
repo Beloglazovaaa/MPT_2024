@@ -129,6 +129,7 @@ public class hard_9 {
                             ArrayPI_9.saveMatrixToDatabase(connection, productMatrix, tableName);
                             ArrayPI_9.saveMatrixToDatabase(connection, powerer.getResultMatrix1(), tableName);
                             ArrayPI_9.saveMatrixToDatabase(connection, powerer.getResultMatrix2(), tableName);
+                            System.out.println("Результаты успешно сохранены в базе данных.");
 
                             powerMatrix1 = powerer.getResultMatrix1();
                             powerMatrix2 = powerer.getResultMatrix2();
