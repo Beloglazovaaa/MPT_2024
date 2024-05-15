@@ -71,6 +71,11 @@ public class hard_13 {
 
                     case 3:
                         try (Statement statement = connection.createStatement()) {
+                            if (tableName.isEmpty()) {
+                                System.out.println("Сначала создайте таблицу (кейс 2)!");
+                                break;
+                            }
+                            connection.setAutoCommit(false); // Выключаем автокоммит
                             statement.executeUpdate("USE " + dbName);
                             Listik listik = new Listik();
                             List<String> inputList = listik.input();
@@ -80,10 +85,19 @@ public class hard_13 {
                                     preparedStatement.setString(1, value);
                                     preparedStatement.executeUpdate();
                                 }
+                                connection.commit(); // Сохраняем изменения в базе данных
                                 System.out.println("Список успешно сохранен в MySQL.");
+
+                                // Генерация и вывод рандомного списка
+                                List<Integer> randomList = listik.random();
                             }
                         } catch (SQLException e) {
                             System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
+                            try {
+                                connection.rollback(); // Откатываем изменения в случае ошибки
+                            } catch (SQLException rollbackException) {
+                                System.out.println("Ошибка при откате изменений: " + rollbackException.getMessage());
+                            }
                         }
                         break;
 
@@ -98,12 +112,18 @@ public class hard_13 {
                                 int rowsAffected = preparedStatement.executeUpdate();
                                 if (rowsAffected > 0) {
                                     System.out.println("Элемент успешно удален из списка.");
+                                    connection.commit(); // Сохраняем изменения в базе данных
                                 } else {
                                     System.out.println("Элемент с указанным ID не найден.");
                                 }
                             }
                         } catch (SQLException e) {
                             System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
+                            try {
+                                connection.rollback(); // Откатываем изменения в случае ошибки
+                            } catch (SQLException rollbackException) {
+                                System.out.println("Ошибка при откате изменений: " + rollbackException.getMessage());
+                            }
                         }
                         break;
 
@@ -120,15 +140,27 @@ public class hard_13 {
                             }
 
                             Workbook workbook = new XSSFWorkbook();
-                            Sheet sheet = workbook.createSheet("Data");
+                            Sheet sheet1 = workbook.createSheet("Input Data");
+                            Sheet sheet2 = workbook.createSheet("Random Data");
 
-                            int rowNum = 0;
+                            // Fill Sheet 1 with input data
+                            int rowNum1 = 0;
                             for (String data : tableData) {
-                                Row row = sheet.createRow(rowNum++);
+                                Row row = sheet1.createRow(rowNum1++);
                                 row.createCell(0).setCellValue(data);
                             }
 
-                            String excelFilePath = "data.xlsx";
+                            // Fill Sheet 2 with random data
+                            Listik listik = new Listik();
+                            List<Integer> randomList = listik.random();
+                            int rowNum2 = 0;
+                            for (Integer num : randomList) {
+                                Row row = sheet2.createRow(rowNum2++);
+                                row.createCell(0).setCellValue("ID: " + rowNum2);
+                                row.createCell(1).setCellValue("Value: " + num);
+                            }
+
+                            String excelFilePath = "hard_13.xlsx";
                             try (FileOutputStream outputStream = new FileOutputStream(excelFilePath)) {
                                 workbook.write(outputStream);
                                 System.out.println("Результаты успешно сохранены в Excel файл.");
@@ -146,6 +178,7 @@ public class hard_13 {
                             System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
                         }
                         break;
+
 
                     case 0:
                         running = false;
