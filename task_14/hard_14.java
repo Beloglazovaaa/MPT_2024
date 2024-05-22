@@ -5,11 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.sql.*;
 import java.util.*;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.*;
+import java.util.*;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,6 +24,8 @@ public class hard_14 {
         Scanner scanner = new Scanner(System.in);
         boolean running = true;
         String tableName = "";
+        List<Integer> inputList = new ArrayList<>();
+        listik listik = new listik();
 
         String url = "jdbc:mysql://localhost:3305/";
         String dbName = "DB";
@@ -28,9 +35,7 @@ public class hard_14 {
         try (Connection connection = DriverManager.getConnection(url + dbName, username, password)) {
             System.out.println("Подключение к базе данных успешно!");
 
-            listik listik = new listik();
             List<Integer> randomList = listik.random();
-            List<Integer> inputList = listik.input();
 
             while (running) {
                 System.out.println("1. Вывести все таблицы из MySQL.");
@@ -66,7 +71,7 @@ public class hard_14 {
                         tableName = scanner.nextLine();
 
                         String createTableQuery = "CREATE TABLE IF NOT EXISTS " + tableName +
-                                "(id INT AUTO_INCREMENT PRIMARY KEY, value VARCHAR(255))";
+                                "(id INT AUTO_INCREMENT PRIMARY KEY, value INT)";
 
                         try (Statement statement = connection.createStatement()) {
                             statement.executeUpdate(createTableQuery);
@@ -77,6 +82,8 @@ public class hard_14 {
                         break;
 
                     case 3:
+                        inputList = listik.input();
+
                         System.out.println("Введите число для проверки: ");
                         int number = scanner.nextInt();
                         boolean isInList = listik.containsNumber(inputList, number);
@@ -124,6 +131,14 @@ public class hard_14 {
                                 if (rowsAffected > 0) {
                                     System.out.println("Элемент успешно удален из списка.");
                                     connection.commit(); // Сохраняем изменения в базе данных
+
+                                    // Удаление из рандомного списка
+                                    if (id > 0 && id <= randomList.size()) {
+                                        randomList.remove(id - 1);
+                                        System.out.println("Элемент успешно удален из рандомного списка.");
+                                    } else {
+                                        System.out.println("Элемент с указанным ID не найден в рандомном списке.");
+                                    }
                                 } else {
                                     System.out.println("Элемент с указанным ID не найден.");
                                 }
@@ -151,23 +166,32 @@ public class hard_14 {
                             }
 
                             Workbook workbook = new XSSFWorkbook();
-                            Sheet sheet1 = workbook.createSheet("Data");
 
-                            // Fill Sheet with data
-                            Row headerRow = sheet1.createRow(0);
-                            headerRow.createCell(0).setCellValue("ID");
-                            headerRow.createCell(1).setCellValue("Value");
-                            int rowNum = 1;
-                            for (String data : tableData) {
-                                Row row = sheet1.createRow(rowNum++);
-                                String[] parts = data.split(", Value: ");
-                                row.createCell(0).setCellValue(parts[0].replace("ID: ", ""));
-                                row.createCell(1).setCellValue(parts[1]);
+                            // Create sheet for random list
+                            Sheet randomSheet = workbook.createSheet("Random List");
+                            Row randomHeaderRow = randomSheet.createRow(0);
+                            randomHeaderRow.createCell(0).setCellValue("ID");
+                            randomHeaderRow.createCell(1).setCellValue("Value");
+                            for (int i = 0; i < randomList.size(); i++) {
+                                Row row = randomSheet.createRow(i + 1);
+                                row.createCell(0).setCellValue(i + 1);
+                                row.createCell(1).setCellValue(randomList.get(i));
                             }
+                            randomSheet.autoSizeColumn(0);
+                            randomSheet.autoSizeColumn(1);
 
-                            // Autosize columns
-                            sheet1.autoSizeColumn(0);
-                            sheet1.autoSizeColumn(1);
+                            // Create sheet for input list
+                            Sheet inputSheet = workbook.createSheet("Input List");
+                            Row inputHeaderRow = inputSheet.createRow(0);
+                            inputHeaderRow.createCell(0).setCellValue("ID");
+                            inputHeaderRow.createCell(1).setCellValue("Value");
+                            for (int i = 0; i < inputList.size(); i++) {
+                                Row row = inputSheet.createRow(i + 1);
+                                row.createCell(0).setCellValue(i + 1);
+                                row.createCell(1).setCellValue(inputList.get(i));
+                            }
+                            inputSheet.autoSizeColumn(0);
+                            inputSheet.autoSizeColumn(1);
 
                             String excelFilePath = "hard_14.xlsx";
                             try (FileOutputStream outputStream = new FileOutputStream(excelFilePath)) {
@@ -205,4 +229,3 @@ public class hard_14 {
         }
     }
 }
-

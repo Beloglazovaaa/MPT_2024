@@ -1,6 +1,12 @@
 package task_14;
 
 import java.util.*;
+import java.util.Scanner;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
 
 public class listik {
     public List<Integer> random() {
@@ -16,15 +22,10 @@ public class listik {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Введите количество элементов списка: ");
         int count = scanner.nextInt();
-        System.out.println("Введите минимальное значение диапазона: ");
-        int min = scanner.nextInt();
-        System.out.println("Введите максимальное значение диапазона: ");
-        int max = scanner.nextInt();
-
         List<Integer> inputList = new ArrayList<>();
-        Random rand = new Random();
         for (int i = 0; i < count; i++) {
-            inputList.add(min + rand.nextInt(max - min + 1));
+            System.out.println("Введите элемент " + (i + 1) + ": ");
+            inputList.add(scanner.nextInt());
         }
         return inputList;
     }
