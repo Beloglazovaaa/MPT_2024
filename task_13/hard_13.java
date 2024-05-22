@@ -1,9 +1,7 @@
 package task_13;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -25,11 +23,14 @@ public class hard_13 {
         try (Connection connection = DriverManager.getConnection(url + dbName, username, password)) {
             System.out.println("Подключение к базе данных успешно!");
 
+            Listik listik = new Listik();
+            List<Map.Entry<Integer, Integer>> randomList = listik.random();
+
             while (running) {
                 System.out.println("1. Вывести все таблицы из MySQL.");
                 System.out.println("2. Создать таблицу в MySQL.");
                 System.out.println("3. Ввести список и сохранить в MySQL.");
-                System.out.println("4. Удалить элемент из списка в MySQL по ID.");
+                System.out.println("4. Удалить элемент из списка в MySQL по ID и из рандомного списка по ID.");
                 System.out.println("5. Сохранить итоговые результаты из MySQL в Excel и вывести их в консоль.");
                 System.out.println("0. Выйти из программы.");
                 System.out.println("Выберите действие: ");
@@ -77,7 +78,6 @@ public class hard_13 {
                             }
                             connection.setAutoCommit(false); // Выключаем автокоммит
                             statement.executeUpdate("USE " + dbName);
-                            Listik listik = new Listik();
                             List<String> inputList = listik.input();
                             String insertQuery = "INSERT INTO " + tableName + " (value) VALUES (?)";
                             try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
@@ -87,9 +87,6 @@ public class hard_13 {
                                 }
                                 connection.commit(); // Сохраняем изменения в базе данных
                                 System.out.println("Список успешно сохранен в MySQL.");
-
-                                // Генерация и вывод рандомного списка
-                                List<Integer> randomList = listik.random();
                             }
                         } catch (SQLException e) {
                             System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
@@ -102,16 +99,17 @@ public class hard_13 {
                         break;
 
                     case 4:
-                        System.out.println("Введите ID элемента для удаления: ");
-                        int id = scanner.nextInt();
+                        System.out.println("Введите ID элемента для удаления из MySQL: ");
+                        int mysqlId = scanner.nextInt();
+                        scanner.nextLine(); // consume newline character
                         try (Statement statement = connection.createStatement()) {
                             statement.executeUpdate("USE " + dbName);
                             String deleteQuery = "DELETE FROM " + tableName + " WHERE id = ?";
                             try (PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery)) {
-                                preparedStatement.setInt(1, id);
+                                preparedStatement.setInt(1, mysqlId);
                                 int rowsAffected = preparedStatement.executeUpdate();
                                 if (rowsAffected > 0) {
-                                    System.out.println("Элемент успешно удален из списка.");
+                                    System.out.println("Элемент успешно удален из MySQL.");
                                     connection.commit(); // Сохраняем изменения в базе данных
                                 } else {
                                     System.out.println("Элемент с указанным ID не найден.");
@@ -125,6 +123,10 @@ public class hard_13 {
                                 System.out.println("Ошибка при откате изменений: " + rollbackException.getMessage());
                             }
                         }
+
+                        System.out.println("Введите ID элемента для удаления из рандомного списка: ");
+                        int randomId = scanner.nextInt();
+                        listik.deleteRandom(randomList, randomId);
                         break;
 
                     case 5:
@@ -151,13 +153,11 @@ public class hard_13 {
                             }
 
                             // Fill Sheet 2 with random data
-                            Listik listik = new Listik();
-                            List<Integer> randomList = listik.random();
                             int rowNum2 = 0;
-                            for (Integer num : randomList) {
+                            for (Map.Entry<Integer, Integer> entry : randomList) {
                                 Row row = sheet2.createRow(rowNum2++);
-                                row.createCell(0).setCellValue("ID: " + rowNum2);
-                                row.createCell(1).setCellValue("Value: " + num);
+                                row.createCell(0).setCellValue("ID: " + entry.getKey());
+                                row.createCell(1).setCellValue("Value: " + entry.getValue());
                             }
 
                             String excelFilePath = "hard_13.xlsx";
@@ -178,7 +178,6 @@ public class hard_13 {
                             System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
                         }
                         break;
-
 
                     case 0:
                         running = false;

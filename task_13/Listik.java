@@ -1,18 +1,13 @@
 package task_13;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 public class Listik {
-    public List<Integer> random() {
-        List<Integer> randomList = new ArrayList<>();
-        Random rand = new
-
-                Random();
-        for (int i = 0; i < 1000; i++) {
-            randomList.add(rand.nextInt());
+    public List<Map.Entry<Integer, Integer>> random() {
+        List<Map.Entry<Integer, Integer>> randomList = new ArrayList<>();
+        Random rand = new Random();
+        for (int i = 1; i <= 1000; i++) {
+            randomList.add(new AbstractMap.SimpleEntry<>(i, rand.nextInt()));
         }
         return randomList;
     }
@@ -25,5 +20,22 @@ public class Listik {
             inputList.add(scanner.nextLine());
         }
         return inputList;
+    }
+
+    public void deleteRandom(List<Map.Entry<Integer, Integer>> randomList, int id) {
+        Iterator<Map.Entry<Integer, Integer>> iterator = randomList.iterator();
+        boolean found = false;
+        while (iterator.hasNext()) {
+            Map.Entry<Integer, Integer> entry = iterator.next();
+            if (entry.getKey() == id) {
+                iterator.remove();
+                found = true;
+                System.out.println("Элемент с ID " + id + " успешно удален из рандомного списка.");
+                break;
+            }
+        }
+        if (!found) {
+            System.out.println("Элемент с указанным ID не найден.");
+        }
     }
 }
