@@ -99,7 +99,7 @@ public class hard_13 {
                         break;
 
                     case 4:
-                        System.out.println("Введите ID элемента для удаления из MySQL: ");
+                        System.out.println("Введите ID для удаления элемента из введенного списка: ");
                         int mysqlId = scanner.nextInt();
                         scanner.nextLine(); // consume newline character
                         try (Statement statement = connection.createStatement()) {
@@ -124,7 +124,7 @@ public class hard_13 {
                             }
                         }
 
-                        System.out.println("Введите ID элемента для удаления из рандомного списка: ");
+                        System.out.println("Введите ID для удаления элемента из рандомного списка: ");
                         int randomId = scanner.nextInt();
                         listik.deleteRandom(randomList, randomId);
                         break;
@@ -142,23 +142,37 @@ public class hard_13 {
                             }
 
                             Workbook workbook = new XSSFWorkbook();
-                            Sheet sheet1 = workbook.createSheet("Input Data");
-                            Sheet sheet2 = workbook.createSheet("Random Data");
+                            Sheet sheet1 = workbook.createSheet("Введенный список");
+                            Sheet sheet2 = workbook.createSheet("Рандомный список");
 
                             // Fill Sheet 1 with input data
-                            int rowNum1 = 0;
+                            Row headerRow1 = sheet1.createRow(0);
+                            headerRow1.createCell(0).setCellValue("ID");
+                            headerRow1.createCell(1).setCellValue("Значение");
+                            int rowNum1 = 1;
                             for (String data : tableData) {
                                 Row row = sheet1.createRow(rowNum1++);
-                                row.createCell(0).setCellValue(data);
+                                String[] parts = data.split(", Value: ");
+                                row.createCell(0).setCellValue(parts[0].replace("ID: ", ""));
+                                row.createCell(1).setCellValue(parts[1]);
                             }
 
                             // Fill Sheet 2 with random data
-                            int rowNum2 = 0;
+                            Row headerRow2 = sheet2.createRow(0);
+                            headerRow2.createCell(0).setCellValue("ID");
+                            headerRow2.createCell(1).setCellValue("Значение");
+                            int rowNum2 = 1;
                             for (Map.Entry<Integer, Integer> entry : randomList) {
                                 Row row = sheet2.createRow(rowNum2++);
-                                row.createCell(0).setCellValue("ID: " + entry.getKey());
-                                row.createCell(1).setCellValue("Value: " + entry.getValue());
+                                row.createCell(0).setCellValue(entry.getKey());
+                                row.createCell(1).setCellValue(entry.getValue());
                             }
+
+                            // Autosize columns
+                            sheet1.autoSizeColumn(0);
+                            sheet1.autoSizeColumn(1);
+                            sheet2.autoSizeColumn(0);
+                            sheet2.autoSizeColumn(1);
 
                             String excelFilePath = "hard_13.xlsx";
                             try (FileOutputStream outputStream = new FileOutputStream(excelFilePath)) {
@@ -166,12 +180,6 @@ public class hard_13 {
                                 System.out.println("Результаты успешно сохранены в Excel файл.");
                             } catch (IOException e) {
                                 System.out.println("Ошибка при сохранении в Excel: " + e.getMessage());
-                            }
-
-                            // Вывод в консоль
-                            System.out.println("Результаты из MySQL:");
-                            for (String data : tableData) {
-                                System.out.println(data);
                             }
 
                         } catch (SQLException e) {
