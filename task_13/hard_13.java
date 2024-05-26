@@ -141,6 +141,11 @@ public class hard_13 {
                                 tableData.add("ID: " + idFromDB + ", Value: " + valueFromDB);
                             }
 
+                            System.out.println("Результаты из рандомного списка:");
+                            for (Map.Entry<Integer, Integer> entry : randomList) {
+                                System.out.println("ID: " + entry.getKey() + ", Value: " + entry.getValue());
+                            }
+
                             Workbook workbook = new XSSFWorkbook();
                             Sheet sheet1 = workbook.createSheet("Введенный список");
                             Sheet sheet2 = workbook.createSheet("Рандомный список");
