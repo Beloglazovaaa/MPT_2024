@@ -1,4 +1,4 @@
-package task_6;
+package hard_6;
 
 public class MatrixMultiplier {
     private final int[][] firstMatrix;

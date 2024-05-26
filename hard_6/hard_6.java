@@ -12,7 +12,7 @@
 4. Перемножить матрицу, сохранить перемноженную матрицу в MySQL и вывести в консоль.
 5. Сохранить результаты из MySQL в Excel и вывести их в консоль. */
 
-package task_6;
+package hard_6;
 
 import java.sql.*;
 import java.util.Scanner;

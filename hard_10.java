@@ -166,59 +166,7 @@ public class hard_10 {
                         break;
 
                     case 6:
-                        try {
-                            // Выполнение SQL-запроса для выборки данных из таблицы
-                            PreparedStatement selectStatement = connection.prepareStatement("SELECT * FROM " + studentTableName);
-                            ResultSet resultSet = selectStatement.executeQuery();
-
-                            // Создание нового Excel-файла и листа для записи данных
-                            Workbook workbook = new XSSFWorkbook();
-                            Sheet sheet = workbook.createSheet("Students");
-
-                            // Запись заголовков столбцов в первую строку Excel-файла
-                            ResultSetMetaData metaData = resultSet.getMetaData();
-                            int columnCount = metaData.getColumnCount();
-                            Row headerRow = sheet.createRow(0);
-                            for (int i = 1; i <= columnCount; i++) {
-                                headerRow.createCell(i - 1).setCellValue(metaData.getColumnName(i));
-                            }
-
-                            // Запись данных из результата SQL-запроса в Excel-файл
-                            int rowNum = 1;
-                            while (resultSet.next()) {
-                                Row row = sheet.createRow(rowNum++);
-                                for (int i = 1; i <= columnCount; i++) {
-                                    row.createCell(i - 1).setCellValue(resultSet.getString(i));
-                                }
-                            }
-
-                            // Автоматическое выравнивание ширины ячеек по содержимому
-                            for (int i = 0; i < columnCount; i++) {
-                                sheet.autoSizeColumn(i);
-                            }
-
-                            // Сохранение Excel-файла на диск
-                            String excelFilePath = "students.xlsx";
-                            try (FileOutputStream outputStream = new FileOutputStream(excelFilePath)) {
-                                workbook.write(outputStream);
-                            }
-
-                            // Открытие сохраненного файла и вывод его содержимого в консоль
-                            System.out.println("Итоговые результаты сохранены в файл " + excelFilePath + ":");
-                            System.out.println("ID\tFaculty\tFullName\tGroup");
-                            for (int i = 1; i < rowNum; i++) {
-                                Row row = sheet.getRow(i);
-                                for (int j = 0; j < columnCount; j++) {
-                                    System.out.print(row.getCell(j) + "\t");
-                                }
-                                System.out.println();
-                            }
-
-                            // Закрытие workbook
-                            workbook.close();
-                        } catch (SQLException | IOException e) {
-                            System.out.println("Ошибка при выполнении запроса или сохранении Excel-файла: " + e.getMessage());
-                        }
+                        SaveToExcel.saveResultsToExcel(connection, studentTableName);
                         break;
 
                     case 0:
@@ -237,7 +185,14 @@ public class hard_10 {
     }
 }
 
+
+
 class Student {
+    private int id;
+    private String faculty;
+    private String fullName;
+    private String groupName;
+
     public static void inputStudentData(Connection connection, String tableName, Scanner scanner) {
         boolean validInput = false;
         while (!validInput) {
@@ -280,18 +235,87 @@ class Student {
                     System.out.println("Введите группу студента " + (i + 1) + ":");
                     String group = scanner.nextLine();
 
-                    preparedStatement.setInt(1, id);
-                    preparedStatement.setString(2, faculty);
-                    preparedStatement.setString(3, fullName);
-                    preparedStatement.setString(4, group);
-
-                    preparedStatement.executeUpdate();
+                    Student student = new Student(id, faculty, fullName, group);
+                    student.addToDatabase(connection, preparedStatement);
                 }
 
                 System.out.println("Данные о студентах успешно внесены в базу данных.");
             } catch (SQLException e) {
                 System.out.println("Ошибка при вводе данных о студентах: " + e.getMessage());
             }
+        }
+    }
+
+    public Student(int id, String faculty, String fullName, String groupName) {
+        this.id = id;
+        this.faculty = faculty;
+        this.fullName = fullName;
+        this.groupName = groupName;
+    }
+
+    public void addToDatabase(Connection connection, PreparedStatement preparedStatement) throws SQLException {
+        preparedStatement.setInt(1, id);
+        preparedStatement.setString(2, faculty);
+        preparedStatement.setString(3, fullName);
+        preparedStatement.setString(4, groupName);
+        preparedStatement.executeUpdate();
+    }
+}
+
+class SaveToExcel {
+    public static void saveResultsToExcel(Connection connection, String studentTableName) {
+        try {
+            // Выполнение SQL-запроса для выборки данных из таблицы
+            PreparedStatement selectStatement = connection.prepareStatement("SELECT * FROM " + studentTableName);
+            ResultSet resultSet = selectStatement.executeQuery();
+
+            // Создание нового Excel-файла и листа для записи данных
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Students");
+
+            // Запись заголовков столбцов в первую строку Excel-файла
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            Row headerRow = sheet.createRow(0);
+            for (int i = 1; i <= columnCount; i++) {
+                headerRow.createCell(i - 1).setCellValue(metaData.getColumnName(i));
+            }
+
+            // Запись данных из результата SQL-запроса в Excel-файл
+            int rowNum = 1;
+            while (resultSet.next()) {
+                Row row = sheet.createRow(rowNum++);
+                for (int i = 1; i <= columnCount; i++) {
+                    row.createCell(i - 1).setCellValue(resultSet.getString(i));
+                }
+            }
+
+            // Автоматическое выравнивание ширины ячеек по содержимому
+            for (int i = 0; i < columnCount; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Сохранение Excel-файла на диск
+            String excelFilePath = "students.xlsx";
+            try (FileOutputStream outputStream = new FileOutputStream(excelFilePath)) {
+                workbook.write(outputStream);
+            }
+
+            // Открытие сохраненного файла и вывод его содержимого в консоль
+            System.out.println("Итоговые результаты сохранены в файл " + excelFilePath + ":");
+            System.out.println("ID\tFaculty\tFullName\tGroup");
+            for (int i = 1; i < rowNum; i++) {
+                Row row = sheet.getRow(i);
+                for (int j = 0; j < columnCount; j++) {
+                    System.out.print(row.getCell(j) + "\t");
+                }
+                System.out.println();
+            }
+
+            // Закрытие workbook
+            workbook.close();
+        } catch (SQLException | IOException e) {
+            System.out.println("Ошибка при выполнении запроса или сохранении Excel-файла: " + e.getMessage());
         }
     }
 }

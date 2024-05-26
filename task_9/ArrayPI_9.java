@@ -14,8 +14,10 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
+
 import org.apache.poi.ss.util.CellRangeAddress;
 
+import java.sql.SQLException;
 
 public class ArrayPI_9 {
     public static int[][] readMatrixFromInput(Scanner scanner, int rows, int columns) {
@@ -31,6 +33,16 @@ public class ArrayPI_9 {
         return matrix;
     }
 
+    public static void printMatrix(int[][] matrix) {
+        for (int[] row : matrix) {
+            for (int value : row) {
+                System.out.print(value + " ");
+            }
+            System.out.println();
+        }
+    }
+
+
     public static void saveMatrixToDatabase(Connection connection, int[][] matrix, String tableName) {
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate("DROP TABLE IF EXISTS " + tableName);
@@ -43,55 +55,87 @@ public class ArrayPI_9 {
                 }
             }
 
-            System.out.println("Результаты успешно сохранены в базе данных.");
         } catch (SQLException e) {
             System.out.println("Ошибка при сохранении результатов в базу данных: " + e.getMessage());
         }
     }
 
-    public static void saveDataToExcel(String tableName, int[][] firstMatrix, int[][] secondMatrix, int[][] sumMatrix,
-                                       int[][] differenceMatrix, int[][] productMatrix, int[][] powerMatrix1, int[][] powerMatrix2) {
-        try (Workbook workbook = new XSSFWorkbook()) {
-            saveMatrixToSheet(workbook, "Матрица 1", firstMatrix);
-            saveMatrixToSheet(workbook, "Матрица 2", secondMatrix);
-            saveMatrixToSheet(workbook, "Сложение", sumMatrix);
-            saveMatrixToSheet(workbook, "Вычитание", differenceMatrix);
-            saveMatrixToSheet(workbook, "Умножение", productMatrix);
-            saveMatrixToSheet(workbook, "Возведение в степень 1", powerMatrix1);
-            saveMatrixToSheet(workbook, "Возведение в степень 2", powerMatrix2);
+    public static void saveDataToExcel(String tableName, int[][] firstMatrix, int[][] secondMatrix, int[][] productMatrix, int[][] sumMatrix, int[][] differenceMatrix, int[][] powerMatrix1, int[][] powerMatrix2) {
+        try (Workbook workbook = new XSSFWorkbook();
+             FileOutputStream outputStream = new FileOutputStream("hard_9.xlsx")) {
 
-            try (FileOutputStream outputStream = new FileOutputStream(tableName + ".xlsx")) {
-                workbook.write(outputStream);
-                System.out.println("Данные успешно сохранены в файл " + tableName + ".xlsx");
-            } catch (IOException e) {
-                System.out.println("Ошибка при сохранении данных в Excel: " + e.getMessage());
+            // Лист для первой матрицы
+            // Лист для первой матрицы
+            Sheet sheet1 = workbook.createSheet("Матрица 1");
+            if (firstMatrix != null) {
+                saveMatrixToSheet(sheet1, firstMatrix);
+            } else {
+                System.out.println("Первая матрица отсутствует");
             }
+
+// Лист для второй матрицы
+            Sheet sheet2 = workbook.createSheet("Матрица 2");
+            if (secondMatrix != null) {
+                saveMatrixToSheet(sheet2, secondMatrix);
+            } else {
+                System.out.println("Вторая матрица отсутствует");
+            }
+
+// Лист для умноженной матрицы
+            Sheet sheet3 = workbook.createSheet("Перемноженная матрица");
+            if (productMatrix != null) {
+                saveMatrixToSheet(sheet3, productMatrix);
+            } else {
+                System.out.println("Умноженная матрица отсутствует");
+            }
+
+// Лист для сложенной матрицы
+            Sheet sheet4 = workbook.createSheet("Сложенная матрица");
+            if (sumMatrix != null) {
+                saveMatrixToSheet(sheet4, sumMatrix);
+            } else {
+                System.out.println("Сложенная матрица отсутствует");
+            }
+
+// Лист для вычтенной матрицы
+            Sheet sheet5 = workbook.createSheet("Вычтенная матрица");
+            if (differenceMatrix != null) {
+                saveMatrixToSheet(sheet5, differenceMatrix);
+            } else {
+                System.out.println("Вычтенная матрица отсутствует");
+            }
+
+// Лист для первой матрицы, возведенной в степень
+            Sheet sheet6 = workbook.createSheet("Матрица 1 в степени");
+            if (powerMatrix1 != null) {
+                saveMatrixToSheet(sheet6, powerMatrix1);
+            } else {
+                System.out.println("Первая матрица в степени отсутствует");
+            }
+
+// Лист для второй матрицы, возведенной в степень
+            Sheet sheet7 = workbook.createSheet("Матрица 2 в степени");
+            if (powerMatrix2 != null) {
+                saveMatrixToSheet(sheet7, powerMatrix2);
+            } else {
+                System.out.println("Вторая матрица в степени отсутствует");
+            }
+
+
+            workbook.write(outputStream);
         } catch (IOException e) {
-            System.out.println("Ошибка при создании книги Excel: " + e.getMessage());
+            System.out.println("Ошибка при сохранении данных в Excel: " + e.getMessage());
         }
     }
 
-    private static void saveMatrixToSheet(Workbook workbook, String sheetName, int[][] matrix) {
-        Sheet sheet = workbook.createSheet(sheetName);
-
-        // Создаем строку для ID и описания
-        Row headerRow = sheet.createRow(0);
-        headerRow.createCell(0).setCellValue("ID");
-        headerRow.createCell(1).setCellValue("Описание");
-
-        // Создаем строку для записи матрицы
-        Row matrixRow = sheet.createRow(1);
-        // Преобразуем матрицу в строку и записываем в ячейку
-        StringBuilder matrixAsString = new StringBuilder();
+    private static void saveMatrixToSheet(Sheet sheet, int[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
+            Row row = sheet.createRow(i);
             for (int j = 0; j < matrix[i].length; j++) {
-                matrixAsString.append(matrix[i][j]).append(" ");
+                Cell cell = row.createCell(j);
+                cell.setCellValue(matrix[i][j]);
             }
-            matrixAsString.append("\n"); // Переходим на новую строку
         }
-        // Записываем матрицу в ячейку, предварительно настроив форматирование
-        Cell matrixCell = matrixRow.createCell(2);
-        matrixCell.setCellValue(matrixAsString.toString());
-        sheet.autoSizeColumn(2); // Растягиваем столбец для матрицы
     }
+
 }
