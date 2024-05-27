@@ -14,7 +14,7 @@ public class Listik {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Введите 50 элементов:");
 
-        while (elements.size() < 50) {
+        while (elements.size() < 10) {
             String input = scanner.nextLine();
             elements.add(input);
         }
@@ -49,11 +49,12 @@ class Listik1 extends Listik {
                 stmt.setString(2, listAsString);
                 stmt.executeUpdate();
 
-                for (String element : set) {
-                    stmt.setString(1, "set");
-                    stmt.setString(2, element);
-                    stmt.executeUpdate();
-                }
+                String setAsString = String.join(",", set);
+                stmt.setString(1, "set");
+                stmt.setString(2, setAsString);
+                stmt.addBatch();
+
+                stmt.executeBatch();
 
                 System.out.println("Данные успешно сохранены в базу данных.");
             }
