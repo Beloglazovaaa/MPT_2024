@@ -87,42 +87,39 @@ public class hard_14 {
                         break;
 
                     case 3:
-                        try (Statement statement = connection.createStatement()) {
+                        List<Integer> inputList = listik.input();
+                        System.out.println("Введите число для проверки: ");
+                        int number = scanner.nextInt();
+                        boolean isInList = listik.containsNumber(inputList, number);
+                        System.out.println("Число " + number + (isInList ? " содержится" : " не содержится") + " в списке.");
+
+                        try {
                             if (tableName.isEmpty()) {
                                 System.out.println("Сначала создайте таблицу (кейс 2)!");
                                 break;
                             }
                             connection.setAutoCommit(false); // Выключаем автокоммит
-                            statement.executeUpdate("USE " + dbName);
-                            List<Integer> inputList = listik.input();
-                            String insertQuery = "INSERT INTO " + tableName + " (value) VALUES (?)";
-                            try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
-                                for (Integer value : inputList) {
-                                    preparedStatement.setString(1, String.valueOf(value));
-                                    preparedStatement.executeUpdate();
+                            try (Statement statement = connection.createStatement()) {
+                                statement.executeUpdate("USE " + dbName);
+                                String insertQuery = "INSERT INTO " + tableName + " (value) VALUES (?)";
+                                try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+                                    for (Integer value : inputList) {
+                                        preparedStatement.setString(1, String.valueOf(value));
+                                        preparedStatement.executeUpdate();
+                                    }
+                                    connection.commit(); // Сохраняем изменения в базе данных
+                                    System.out.println("Список успешно сохранен в MySQL.");
                                 }
-                                connection.commit(); // Сохраняем изменения в базе данных
-                                System.out.println("Список успешно сохранен в MySQL.");
-                            }
-
-
-                            String insertRandomQuery = "INSERT INTO " + tableName + " (id, value) VALUES (?, ?)";
-                            try (PreparedStatement preparedStatement = connection.prepareStatement(insertRandomQuery)) {
-                                for (Map.Entry<Integer, Integer> entry : randomList) {
-                                    preparedStatement.setInt(1, entry.getKey());
-                                    preparedStatement.setInt(2, entry.getValue());
-                                    preparedStatement.executeUpdate();
+                            } catch (SQLException e) {
+                                System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
+                                try {
+                                    connection.rollback(); // Откатываем изменения в случае ошибки
+                                } catch (SQLException rollbackException) {
+                                    System.out.println("Ошибка при откате изменений: " + rollbackException.getMessage());
                                 }
-                                connection.commit();
-                                System.out.println("Рандомный список успешно сохранен в MySQL.");
                             }
                         } catch (SQLException e) {
                             System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
-                            try {
-                                connection.rollback(); // Откатываем изменения в случае ошибки
-                            } catch (SQLException rollbackException) {
-                                System.out.println("Ошибка при откате изменений: " + rollbackException.getMessage());
-                            }
                         }
                         break;
 
