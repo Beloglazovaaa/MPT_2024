@@ -154,12 +154,12 @@ public class hard_13 {
                             while (resultSet.next()) {
                                 int idFromDB = resultSet.getInt("id");
                                 String valueFromDB = resultSet.getString("value");
-                                tableData.add("ID: " + idFromDB + ", Значение: " + valueFromDB);
+                                tableData.add("ID: " + idFromDB + ", Value: " + valueFromDB);
                             }
 
                             System.out.println("Результаты из рандомного списка:");
                             for (Map.Entry<Integer, Integer> entry : randomList) {
-                                System.out.println("ID: " + entry.getKey() + ", Значение: " + entry.getValue());
+                                System.out.println("ID: " + entry.getKey() + ", Value: " + entry.getValue());
                             }
 
                             Workbook workbook = new XSSFWorkbook();
