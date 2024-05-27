@@ -14,7 +14,7 @@ public class Listik {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Введите 50 элементов:");
 
-        while (elements.size() < 10) {
+        while (elements.size() < 50) {
             String input = scanner.nextLine();
             elements.add(input);
         }
