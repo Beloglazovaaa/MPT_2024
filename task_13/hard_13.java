@@ -50,7 +50,7 @@ public class hard_13 {
                 System.out.println("0. Выйти из программы.");
                 System.out.println("Выберите действие: ");
                 int choice = scanner.nextInt();
-                scanner.nextLine(); // consume newline character
+                scanner.nextLine();
 
                 switch (choice) {
                     case 1:
@@ -166,7 +166,7 @@ public class hard_13 {
                             Sheet sheet1 = workbook.createSheet("Введенный список");
                             Sheet sheet2 = workbook.createSheet("Рандомный список");
 
-                            // Fill Sheet 1 with input data
+
                             Row headerRow1 = sheet1.createRow(0);
                             headerRow1.createCell(0).setCellValue("ID");
                             headerRow1.createCell(1).setCellValue("Значение");
@@ -178,7 +178,7 @@ public class hard_13 {
                                 row.createCell(1).setCellValue(parts[1]);
                             }
 
-                            // Fill Sheet 2 with random data
+
                             Row headerRow2 = sheet2.createRow(0);
                             headerRow2.createCell(0).setCellValue("ID");
                             headerRow2.createCell(1).setCellValue("Значение");
@@ -189,7 +189,7 @@ public class hard_13 {
                                 row.createCell(1).setCellValue(entry.getValue());
                             }
 
-                            // Autosize columns
+
                             sheet1.autoSizeColumn(0);
                             sheet1.autoSizeColumn(1);
                             sheet2.autoSizeColumn(0);
