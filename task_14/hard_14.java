@@ -1,3 +1,21 @@
+/* Базовый вариант. Объектно-ориентированное программирование и коллекции. Создать класс Listik с
+модификатором доступа public. В данном классе создать два метода: random и input с модификатором
+доступа protected. Внутри метода random создать список длиной из 1000 случайных значений int
+(генератор). В методе input необходимо создать список из 10000 значений Integer. При этом количество
+элементов и числовой диапазон элементов вводятся пользователем. Выполнить ввод числа с клавиатуры с
+последующей проверкой на принадлежность данного числа данному списку.
+Объектно-ориентированное программирование и коллекции. Реализовать программу с интерактивным
+консольным меню, (т.е. вывод списка действий по цифрам. При этом при нажатии на цифру у нас
+должно выполняться определенное действие). Задачи полностью идентичны заданию №1. Каждый пункт
+меню должен быть отдельным классом-наследником (подклассом).
+1. Вывести все таблицы из базы данных MySQL.
+2. Создать таблицу в базе данных MySQL.
+3. Сохранить вводимое число и списки в MySQL.
+4. Удалить элемент из списка в MySQL по ID.
+5. Сохранить итоговые результаты из MySQL в Excel и вывести их в консоль. */
+
+package task_14;
+
 import java.sql.*;
 import java.util.*;
 import org.apache.poi.ss.usermodel.Row;
@@ -142,17 +160,17 @@ public class hard_14 {
                             ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName);
 
                             List<String> tableData = new ArrayList<>();
-                            System.out.println("Результаты из MySQL:");
+                            System.out.println("Результаты из введенного списка пользователем:");
                             while (resultSet.next()) {
                                 int idFromDB = resultSet.getInt("id");
                                 String valueFromDB = resultSet.getString("value");
-                                tableData.add("ID: " + idFromDB + ", Value: " + valueFromDB);
-                                System.out.println("ID: " + idFromDB + ", Value: " + valueFromDB);
+                                tableData.add("ID: " + idFromDB + ", Значение: " + valueFromDB);
+                                System.out.println("ID: " + idFromDB + ", Значение: " + valueFromDB);
                             }
 
                             System.out.println("Результаты из рандомного списка:");
                             for (Map.Entry<Integer, Integer> entry : randomList) {
-                                System.out.println("ID: " + entry.getKey() + ", Value: " + entry.getValue());
+                                System.out.println("ID: " + entry.getKey() + ", Значение: " + entry.getValue());
                             }
 
                             Workbook workbook = new XSSFWorkbook();
@@ -218,52 +236,3 @@ public class hard_14 {
         }
     }
 }
-
-class listik {
-    public List<Map.Entry<Integer, Integer>> random() {
-        List<Map.Entry<Integer, Integer>> randomList = new ArrayList<>();
-        Random rand = new Random();
-        for (int i = 1; i <= 1000; i++) {
-            randomList.add(new AbstractMap.SimpleEntry<>(i, rand.nextInt()));
-        }
-        return randomList;
-    }
-
-    protected List<Integer> input() {
-        List<Integer> inputList = new ArrayList<>();
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Введите количество элементов списка: ");
-        int count = scanner.nextInt();
-        System.out.println("Введите минимальное значение: ");
-        int minValue = scanner.nextInt();
-        System.out.println("Введите максимальное значение: ");
-        int maxValue = scanner.nextInt();
-        System.out.println("Введите элементы списка: ");
-        for (int i = 0; i < count; i++) {
-            inputList.add(scanner.nextInt());
-        }
-        return inputList;
-    }
-
-    public boolean containsNumber(List<Integer> list, int number) {
-        return list.contains(number);
-    }
-
-    public void deleteRandom(List<Map.Entry<Integer, Integer>> randomList, int id) {
-        Iterator<Map.Entry<Integer, Integer>> iterator = randomList.iterator();
-        boolean found = false;
-        while (iterator.hasNext()) {
-            Map.Entry<Integer, Integer> entry = iterator.next();
-            if (entry.getKey().equals(id)) {
-                iterator.remove();
-                found = true;
-                System.out.println("Элемент с ID " + id + " успешно удален из рандомного списка.");
-                break;
-            }
-        }
-        if (!found) {
-            System.out.println("Элемент с указанным ID не найден.");
-        }
-    }
-}
-
