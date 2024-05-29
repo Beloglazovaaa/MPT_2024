@@ -16,9 +16,6 @@
 5. Удалить данные о студенте из MySQL по ID.
 6. Сохранить итоговые результаты из MySQL в Excel и вывести их в консоль. */
 
-
-
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
@@ -66,6 +63,7 @@ public class hard_12 {
 
         url += dbName;
         String studentTableName = "";
+        List<Student> studentList = new ArrayList<>();
 
         while (running) {
             System.out.println("Выберите действие:");
@@ -74,7 +72,7 @@ public class hard_12 {
             System.out.println("3. Ввести данные о студентах, отсортировать по фамилии и вывести список. Сохранить в MySQL и Excel.");
             System.out.println("4. Вывести данные о студенте по ID из MySQL.");
             System.out.println("5. Удалить данные о студенте из MySQL по ID.");
-            System.out.println("6. Сохранить данные в MySQL и Excel");
+            System.out.println("6. Сохранить данные в Excel");
             System.out.println("0. Выход");
             try {
                 int choice = scanner.nextInt();
@@ -111,34 +109,27 @@ public class hard_12 {
                     case 3:
                         System.out.println("Введите название таблицы для ввода данных о студентах:");
                         studentTableName = scanner.nextLine();
-                        List<Student> studentList = Student.inputAndSortStudentData(connection, studentTableName, scanner);
+                        studentList = Student.inputAndSortStudentData(connection, studentTableName, scanner);
                         Student.displayStudents(studentList);
-                        SaveToExcel.saveResultsToExcel(connection, studentTableName);
                         break;
 
                     case 4:
-                        System.out.println("Введите ID студента для вывода информации:");
-                        int studentId = 0;
+                        System.out.println("Введите ID студента для поиска:");
+                        int studentIdToFind = scanner.nextInt();
+                        scanner.nextLine(); // Consume newline character
                         try {
-                            studentId = Integer.parseInt(scanner.nextLine());
-                        } catch (NumberFormatException e) {
-                            System.out.println("Ошибка! Введите целое число.");
-                            break;
-                        }
-
-                        try {
-                            PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + studentTableName + " WHERE id = ?");
-                            statement.setInt(1, studentId);
-                            ResultSet resultSet = statement.executeQuery();
-
+                            String selectQuery = "SELECT * FROM " + studentTableName + " WHERE id = ?";
+                            PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+                            preparedStatement.setInt(1, studentIdToFind);
+                            ResultSet resultSet = preparedStatement.executeQuery();
                             if (resultSet.next()) {
-                                System.out.println("Данные студента ID_" + studentId + ":");
-                                System.out.println("id: " + resultSet.getInt("id"));
-                                System.out.println("faculty: " + resultSet.getString("faculty"));
-                                System.out.println("fullName: " + resultSet.getString("fullName"));
-                                System.out.println("group_name: " + resultSet.getString("group_name"));
+                                int id = resultSet.getInt("id");
+                                String faculty = resultSet.getString("faculty");
+                                String fullName = resultSet.getString("fullName");
+                                String group = resultSet.getString("group_name");
+                                System.out.printf("ID: %d, Факультет: %s, ФИО: %s, Группа: %s%n", id, faculty, fullName, group);
                             } else {
-                                System.out.println("Студент с ID " + studentId + " не найден.");
+                                System.out.println("Студент с таким ID не найден.");
                             }
                         } catch (SQLException e) {
                             System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
@@ -146,69 +137,71 @@ public class hard_12 {
                         break;
 
                     case 5:
-                        System.out.println("Выберите студента по ID для удаления из БД:");
-                        int studentIdToDelete = 0;
+                        System.out.println("Введите ID студента для удаления:");
+                        int studentIdToDelete = scanner.nextInt();
+                        scanner.nextLine(); // Consume newline character
                         try {
-                            studentIdToDelete = Integer.parseInt(scanner.nextLine());
-                        } catch (NumberFormatException e) {
-                            System.out.println("Ошибка! Введите целое число.");
-                            break;
-                        }
-
-                        try {
-                            PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM " + studentTableName + " WHERE id = ?");
-                            deleteStatement.setInt(1, studentIdToDelete);
-                            int rowsAffected = deleteStatement.executeUpdate();
-
+                            String deleteQuery = "DELETE FROM " + studentTableName + " WHERE id = ?";
+                            PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery);
+                            preparedStatement.setInt(1, studentIdToDelete);
+                            int rowsAffected = preparedStatement.executeUpdate();
                             if (rowsAffected > 0) {
                                 System.out.println("Студент с ID " + studentIdToDelete + " удален из БД.");
+                                List<Student> updatedStudentList = new ArrayList<>(studentList);
+                                updatedStudentList.removeIf(student -> student.getId() == studentIdToDelete);
+                                studentList = updatedStudentList;
                             } else {
-                                System.out.println("Студент с ID " + studentIdToDelete + " не найден в БД.");
+                                System.out.println("Студент с таким ID не найден.");
                             }
                         } catch (SQLException e) {
-                            System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
+                            System.out.println("Ошибка при удалении данных: " + e.getMessage());
                         }
                         break;
 
                     case 6:
-                        if (!studentTableName.isEmpty()) {
-                            List<Student> students = Student.retrieveStudents(connection, studentTableName);
-                            SaveToExcel.saveResultsToExcel(students);
-                            Student.saveToDatabase(connection, students, studentTableName);
-                            System.out.println("Данные успешно сохранены в MySQL и Excel.");
-                        } else {
-                            System.out.println("Ошибка! Название таблицы не указано.");
-                        }
+                        System.out.println("Введите название таблицы для сохранения данных:");
+                        studentTableName = scanner.nextLine();
+                        Student.saveToDatabase(connection, studentList, studentTableName);
+                        SaveToExcel.saveResultsToExcel(studentList);
                         break;
 
                     case 0:
                         running = false;
-                        System.out.println("Программа завершена.");
                         break;
 
                     default:
-                        System.out.println("Некорректный ввод. Пожалуйста, попробуйте еще раз.");
+                        System.out.println("Некорректный выбор. Попробуйте еще раз.");
+                        break;
                 }
             } catch (InputMismatchException e) {
-                System.out.println("Ошибка! Введите целое число.");
-                scanner.nextLine(); // Consume invalid input
+                System.out.println("Некорректный ввод. Попробуйте еще раз.");
+                scanner.next(); // Consume invalid input
             }
         }
+
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            System.out.println("Ошибка при закрытии соединения: " + e.getMessage());
+        }
+
+        scanner.close();
     }
 }
+
+
 
 class SaveToExcel {
     public static void saveResultsToExcel(Connection connection, String studentTableName) {
         try {
-            // Выполнение SQL-запроса для выборки отсортированных данных из указанной таблицы
-            PreparedStatement selectStatement = connection.prepareStatement("SELECT * FROM " + studentTableName +  " ORDER BY fullName");
+            PreparedStatement selectStatement = connection.prepareStatement("SELECT * FROM " + studentTableName + " ORDER BY fullName");
             ResultSet resultSet = selectStatement.executeQuery();
 
-            // Создание нового Excel-файла и листа для записи данных
             Workbook workbook = new XSSFWorkbook();
             Sheet sheet = workbook.createSheet("Students");
 
-            // Запись заголовков столбцов в первую строку Excel-файла
             ResultSetMetaData metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
             Row headerRow = sheet.createRow(0);
@@ -216,7 +209,6 @@ class SaveToExcel {
                 headerRow.createCell(i - 1).setCellValue(metaData.getColumnName(i));
             }
 
-            // Запись данных из результата SQL-запроса в Excel-файл
             int rowNum = 1;
             while (resultSet.next()) {
                 Row row = sheet.createRow(rowNum++);
@@ -225,18 +217,15 @@ class SaveToExcel {
                 }
             }
 
-            // Автоматическое выравнивание ширины ячеек по содержимому
             for (int i = 0; i < columnCount; i++) {
                 sheet.autoSizeColumn(i);
             }
 
-            // Сохранение Excel-файла на диск
             String excelFilePath = studentTableName + ".xlsx";
             try (FileOutputStream outputStream = new FileOutputStream(excelFilePath)) {
                 workbook.write(outputStream);
             }
 
-            // Закрытие workbook
             workbook.close();
 
             System.out.println("Итоговые результаты сохранены в файл " + excelFilePath);
@@ -265,9 +254,10 @@ class SaveToExcel {
         }
 
         try {
-            String excelFilePath = "hard_12.xlsx";
-            FileOutputStream outputStream = new FileOutputStream(excelFilePath);
-            workbook.write(outputStream);
+            String excelFilePath = "students_data.xlsx";
+            try (FileOutputStream outputStream = new FileOutputStream(excelFilePath)) {
+                workbook.write(outputStream);
+            }
             workbook.close();
             System.out.println("Итоговые результаты сохранены в файл " + excelFilePath);
         } catch (IOException e) {
@@ -275,6 +265,7 @@ class SaveToExcel {
         }
     }
 }
+
 
 class Student {
     private int id;
@@ -358,7 +349,7 @@ class Student {
                 PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
 
                 for (Student student : studentList) {
-                    student.addToDatabase(connection, preparedStatement);
+                    student.addToDatabase(preparedStatement);
                 }
 
                 System.out.println("Данные о студентах успешно внесены в базу данных.");
@@ -371,7 +362,7 @@ class Student {
         return Collections.emptyList();
     }
 
-    public void addToDatabase(Connection connection, PreparedStatement preparedStatement) throws SQLException {
+    public void addToDatabase(PreparedStatement preparedStatement) throws SQLException {
         preparedStatement.setInt(1, id);
         preparedStatement.setString(2, faculty);
         preparedStatement.setString(3, fullName);
@@ -399,7 +390,7 @@ class Student {
     }
 
     public static void saveToDatabase(Connection connection, List<Student> students, String tableName) {
-        String insertQuery = "INSERT INTO " + tableName  + " (id, faculty, fullName, group_name) VALUES (?, ?, ?, ?)";
+        String insertQuery = "INSERT INTO " + tableName + " (id, faculty, fullName, group_name) VALUES (?, ?, ?, ?)";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
 
