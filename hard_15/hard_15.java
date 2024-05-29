@@ -1,7 +1,6 @@
 package hard_15;
 
 import java.sql.*;
-import java.util.Scanner;
 import java.util.*;
 
 public class hard_15 {
@@ -61,47 +60,30 @@ public class hard_15 {
 
             switch (choice) {
                 case 1:
-                    showTables(connection);
+                    ShowTables.showTables(connection);
                     break;
 
                 case 2:
-                    createTable(scanner, connection);
+                    tableName = CreateTable.createTable(scanner, connection);
                     break;
                 case 3:
                     listik1.inputElements(tableName, connection);
                     break;
+                case 4:
+                    DeleteElement.deleteById(scanner, tableName, connection);
+                    break;
+                case 5:
+                    ExportToExcel.exportDataToExcel(tableName, connection);
+                    ExportToExcel.displayDataInConsole(tableName, connection);
+                    break;
+                case 0:
+                    running = false;
+                    System.out.println("Программа завершена.");
+                    break;
+
+                default:
+                    System.out.println("Некорректный ввод. Пожалуйста, попробуйте еще раз.");
             }
         }
     }
-
-    private static void showTables(Connection connection) {
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SHOW TABLES");
-            System.out.println("Таблицы в базе данных:");
-            while (resultSet.next()) {
-                System.out.println(resultSet.getString(1));
-            }
-        } catch (SQLException e) {
-            System.out.println("Ошибка при выводе таблиц: " + e.getMessage());
-        }
-    }
-
-
-    private static void createTable(Scanner scanner, Connection connection) {
-        System.out.println("Введите название таблицы: ");
-        tableName = scanner.nextLine();
-
-        String createTableQuery = "CREATE TABLE IF NOT EXISTS " + tableName +
-                "(id INT AUTO_INCREMENT PRIMARY KEY, data_type VARCHAR(50) NOT NULL, data_value TEXT NOT NULL)";
-
-        try {
-            Statement statement = connection.createStatement();
-            statement.executeUpdate(createTableQuery);
-            System.out.println("Таблица успешно создана.");
-        } catch (SQLException e) {
-            System.out.println("Ошибка при создании таблицы: " + e.getMessage());
-        }
-    }
-
 }

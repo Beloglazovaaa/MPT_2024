@@ -1,3 +1,18 @@
+/* Базовый вариант. Объектно-ориентированное программирование и коллекции. Создать класс Listik с
+модификатором доступа public. В данном классе создать два метода: random и input с модификатором
+доступа protected. Внутри метода random создать список длиной из 1000 случайных значений int
+(генератор). В методе input необходимо создать список из 10 значений String, вводимых с клавиатуры. На
+выходе должны получить два списка.
+Объектно-ориентированное программирование и коллекции. Реализовать программу с интерактивным
+консольным меню, (т.е. вывод списка действий по цифрам. При этом при нажатии на цифру у нас
+должно выполняться определенное действие). Задачи полностью идентичны заданию №1. Каждый пункт
+меню должен быть отдельным классом-наследником (подклассом).
+1. Вывести все таблицы из базы данных MySQL.
+2. Создать таблицу в базе данных MySQL.
+3. Ввести список и сохранить в MySQL.
+4. Удалить элемент из списка в MySQL по ID.
+5. Сохранить итоговые результаты из MySQL в Excel и вывести их в консоль */
+
 package task_13;
 
 import java.sql.*;
@@ -35,7 +50,7 @@ public class hard_13 {
                 System.out.println("0. Выйти из программы.");
                 System.out.println("Выберите действие: ");
                 int choice = scanner.nextInt();
-                scanner.nextLine(); // consume newline character
+                scanner.nextLine();
 
                 switch (choice) {
                     case 1:
@@ -88,6 +103,18 @@ public class hard_13 {
                                 connection.commit(); // Сохраняем изменения в базе данных
                                 System.out.println("Список успешно сохранен в MySQL.");
                             }
+
+
+                            String insertRandomQuery = "INSERT INTO " + tableName + " (id, value) VALUES (?, ?)";
+                            try (PreparedStatement preparedStatement = connection.prepareStatement(insertRandomQuery)) {
+                                for (Map.Entry<Integer, Integer> entry : randomList) {
+                                    preparedStatement.setInt(1, entry.getKey());
+                                    preparedStatement.setInt(2, entry.getValue());
+                                    preparedStatement.executeUpdate();
+                                }
+                                connection.commit();
+                                System.out.println("Рандомный список успешно сохранен в MySQL.");
+                            }
                         } catch (SQLException e) {
                             System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
                             try {
@@ -127,6 +154,27 @@ public class hard_13 {
                         System.out.println("Введите ID для удаления элемента из рандомного списка: ");
                         int randomId = scanner.nextInt();
                         listik.deleteRandom(randomList, randomId);
+                        try (Statement statement = connection.createStatement()) {
+                            statement.executeUpdate("USE " + dbName);
+                            String deleteRandomQuery = "DELETE FROM " + tableName + " WHERE id = ?";
+                            try (PreparedStatement preparedStatement = connection.prepareStatement(deleteRandomQuery)) {
+                                preparedStatement.setInt(1, randomId);
+                                int rowsAffected = preparedStatement.executeUpdate();
+                                if (rowsAffected > 0) {
+                                    System.out.println("Элемент успешно удален из рандомного списка в MySQL.");
+                                    connection.commit(); // Сохраняем изменения в базе данных
+                                } else {
+                                    System.out.println("Элемент с указанным ID не найден в рандомном списке.");
+                                }
+                            }
+                        } catch (SQLException e) {
+                            System.out.println("Ошибка при выполнении запроса: " + e.getMessage());
+                            try {
+                                connection.rollback(); // Откатываем изменения в случае ошибки
+                            } catch (SQLException rollbackException) {
+                                System.out.println("Ошибка при откате изменений: " + rollbackException.getMessage());
+                            }
+                        }
                         break;
 
                     case 5:
@@ -135,6 +183,7 @@ public class hard_13 {
                             ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName);
 
                             List<String> tableData = new ArrayList<>();
+                            System.out.println("Результаты из введенного списка пользователем:");
                             while (resultSet.next()) {
                                 int idFromDB = resultSet.getInt("id");
                                 String valueFromDB = resultSet.getString("value");
@@ -150,7 +199,6 @@ public class hard_13 {
                             Sheet sheet1 = workbook.createSheet("Введенный список");
                             Sheet sheet2 = workbook.createSheet("Рандомный список");
 
-                            // Fill Sheet 1 with input data
                             Row headerRow1 = sheet1.createRow(0);
                             headerRow1.createCell(0).setCellValue("ID");
                             headerRow1.createCell(1).setCellValue("Значение");
@@ -162,7 +210,6 @@ public class hard_13 {
                                 row.createCell(1).setCellValue(parts[1]);
                             }
 
-                            // Fill Sheet 2 with random data
                             Row headerRow2 = sheet2.createRow(0);
                             headerRow2.createCell(0).setCellValue("ID");
                             headerRow2.createCell(1).setCellValue("Значение");
@@ -173,7 +220,6 @@ public class hard_13 {
                                 row.createCell(1).setCellValue(entry.getValue());
                             }
 
-                            // Autosize columns
                             sheet1.autoSizeColumn(0);
                             sheet1.autoSizeColumn(1);
                             sheet2.autoSizeColumn(0);
