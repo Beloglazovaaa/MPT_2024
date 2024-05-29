@@ -16,7 +16,7 @@ public class ExportToExcel {
              ResultSet rs = stmt.executeQuery(query);
              Workbook workbook = new XSSFWorkbook()) {
 
-            Sheet sheet = workbook.createSheet(tableName);
+            Sheet sheet = workbook.createSheet("Семинарское занятие №15");
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
 
